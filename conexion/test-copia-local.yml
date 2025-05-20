@@ -4,11 +4,11 @@
   tasks:
   - name: Haciendo fetch del servidor unix al contenedor EE
     fetch:
-      src: /tmp/archivo_test.txt
-      dest: /tmp/archivo_test.txt
+      src: "{{ src_fetch }}"
+      dest: "{{ dest_fetch }}"
       flat: yes
   - name: Copiando del Contenedor EE al filesystem Local
     copy:
-      src: /tmp/archivo_test.txt
-      dest: /tmp/archivo_test.txt
+      src: "{{ src_copy }}"
+      dest: "{{ dest_copy }}"
     delegate_to: "{{ ip_dest }}"
