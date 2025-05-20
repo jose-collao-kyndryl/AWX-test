@@ -6,4 +6,6 @@
       dest: /tmp/archivo_test.txt
   - name: Copiando del Contenedor EE al filesystem Local
     copy:
-    delegate_to: 
+      src: /tmp/archivo_test.txt
+      dest: /tmp/archivo_test.txt
+    delegate_to: 10.72.1.47
