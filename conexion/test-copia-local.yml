@@ -6,6 +6,7 @@
     fetch:
       src: /tmp/archivo_test.txt
       dest: /tmp/archivo_test.txt
+      flat: yes
   - name: Copiando del Contenedor EE al filesystem Local
     copy:
       src: /tmp/archivo_test.txt
