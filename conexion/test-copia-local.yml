@@ -1,4 +1,6 @@
 - name: Prueba de copia para el filesystem local
+  hosts: all
+  become: false
   tasks:
   - name: Haciendo fetch del servidor unix al contenedor EE
     fetch:
