@@ -1,0 +1,9 @@
+- name: Prueba de copia para el filesystem local
+  tasks:
+  - name: Haciendo fetch del servidor unix al contenedor EE
+    fetch:
+      src: /tmp/archivo_test.txt
+      dest: /tmp/archivo_test.txt
+  - name: Copiando del Contenedor EE al filesystem Local
+    copy:
+    delegate_to: 
