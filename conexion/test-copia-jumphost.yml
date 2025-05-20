@@ -2,7 +2,7 @@
   hosts: all
   become: false
   tasks:
-  - name: Haciendo fetch del servidor unix al contenedor EE
+  - name: Haciendo fetch del servidor unix final al jumphost
     fetch:
       src: "{{ src_fetch }}"
       dest: "{{ dest_fetch }}"
