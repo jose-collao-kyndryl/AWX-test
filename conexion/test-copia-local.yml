@@ -11,5 +11,4 @@
     copy:
       src: /tmp/archivo_test.txt
       dest: /tmp/archivo_test.txt
-    delegate_to: 10.72.1.47
-    become_user: awx-user
+    delegate_to: "{{ ip_dest }}"
