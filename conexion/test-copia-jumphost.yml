@@ -3,41 +3,36 @@
   gather_facts: false
   become: false
   vars:
-    ee_staging_path: "/runner/project/retrieved_artifact" 
-    retrieved_file_name_in_ee: "{{ hostvars[inventory_hostname].ruta_del_archivo_a_recuperar | basename }}"
-    ruta_del_archivo_a_recuperar: "/tmp/Kyndryl_19may2025_GROIBMRLY01.mef3"
+    nombre_archivo_origen: "Kyndryl_19may2025_GROIBMRLY01.mef3"
+    ee_staging_path: "/tmp/{{ nombre_archivo_origen }}_fetched" 
+    ruta_del_archivo_a_recuperar: "/tmp/{{ nombre_archivo_origen }}"
   tasks:
-  - name: "Crear directorio de staging en el EE"
-    ansible.builtin.file:
-        path: "{{ ee_staging_path }}"
-        state: directory
-    delegate_to: localhost
-  - name: "Hacer Fetch del archivo '{{ hostvars[inventory_hostname].ruta_archivo_fuente_en_target }}' desde {{ inventory_hostname }} al EE"
+  - name: "Hacer Fetch del archivo '{{ nombre_archivo_origen }}' desde {{ inventory_hostname }} al EE"
     ansible.builtin.fetch:
-        src: "{{ hostvars[inventory_hostname].ruta_del_archivo_a_recuperar }}"
-        dest: "{{ ee_staging_path }}/"
+        src: "{{ ruta_del_archivo_a_recuperar }}"
+        dest: "{{ ee_staging_path }}"
         flat: yes
 - name: Copiar archivo del EE al filesystem del Host RHEL de AWX
-  hosts: localhost
-  connection: local 
+  hosts: 10.72.1.47
   gather_facts: false
   vars:
-    awx_rhel_host_inventory_name: cg4_groibmrly01
-    archivo_fuente_en_ee: "/runner/project/retrieved_artifact/Kyndryl_19may2025_GROIBMRLY01.mef3"
-    destino_final_en_rhel: "/tmp/Kyndryl_19may2025_GROIBMRLY01.mef3" 
+    nombre_archivo_a_tranferir: "Kyndryl_19may2025_GROIBMRLY01.mef3"
+    ruta_archivo_en_ee: "/tmp/{{ nombre_archivo_transferir }}_fetched"
+    ruta_destino_en_rhel: "/tmp/"
   tasks:
-    - name: "Verificar que el archivo {{ archivo_fuente_en_ee }} existe en el EE"
+    - name: "Verificar que el archivo {{ nombre_archivo_a_tranferir }} existe en el EE"
       ansible.builtin.stat:
-        path: "{{ archivo_fuente_en_ee }}"
+        path: "{{ ruta_archivo_en_ee }}"
       register: ee_file_stat
 
     - name: "DEBUG: Info del archivo en EE"
       ansible.builtin.debug:
-        msg: "Archivo a copiar desde EE: {{ archivo_fuente_en_ee }}. ¿Existe?: {{ ee_file_stat.stat.exists | default(false) }}"
+        msg: "Archivo a copiar desde EE: {{ ruta_archivo_en_ee }}. ¿Existe?: {{ ee_file_stat.stat.exists | default(false) }}"
 
-    - name: "Copiar '{{ archivo_fuente_en_ee }}' del EE al Host RHEL ({{ awx_rhel_host_inventory_name }})"
+    - name: "Copiar '{{ nombre_archivo_a_tranferir }}' del EE al Host RHEL"
       ansible.builtin.copy:
-        src: "{{ archivo_fuente_en_ee }}"
-        dest: "{{ destino_final_en_rhel }}"
-      delegate_to: "{{ awx_rhel_host_inventory_name }}"
+        src: "{{ ruta_archivo_en_ee }}"
+        dest: "{{ ruta_destino_en_rhel }}{{ nombre_archivo_transferir }}"
+        mode: '0644'
+      delegate_to: localhost
   #    when: ee_file_stat.stat.is_file is defined and ee_file_stat.stat.is_file
