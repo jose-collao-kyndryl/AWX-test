@@ -23,7 +23,7 @@
   gather_facts: false
   vars:
     awx_rhel_host_inventory_name: cg4_groibmrly01
-    archivo_fuente_en_ee: "/runner/project/fetched_files/Kyndryl_19may2025_GROIBMRLY01.mef3"
+    archivo_fuente_en_ee: "/runner/project/retrieved_artifact/Kyndryl_19may2025_GROIBMRLY01.mef3"
     destino_final_en_rhel: "/tmp/Kyndryl_19may2025_GROIBMRLY01.mef3" 
   tasks:
     - name: "Verificar que el archivo {{ archivo_fuente_en_ee }} existe en el EE"
