@@ -1,10 +1,42 @@
 - name: Prueba de copia para el filesystem local
   hosts: all
+  gather_facts: false
   become: false
+  vars:
+    ee_staging_path: "/runner/project/retrieved_artifact" 
+    retrieved_file_name_in_ee: "{{ hostvars[inventory_hostname].ruta_del_archivo_a_recuperar | basename }}"
   tasks:
-  - name: Haciendo fetch del servidor unix final al jumphost
-    fetch:
-      src: "{{ src_fetch }}"
-      dest: "{{ dest_fetch }}"
-      flat: yes
-    delegate_to: "{{ ip_dest }}"
+  - name: "Crear directorio de staging en el EE"
+      ansible.builtin.file:
+        path: "{{ ee_staging_path }}"
+        state: directory
+      delegate_to: localhost
+  - name: "Hacer Fetch del archivo '{{ hostvars[inventory_hostname].ruta_archivo_fuente_en_target }}' desde {{ inventory_hostname }} al EE"
+      ansible.builtin.fetch:
+        src: "{{ hostvars[inventory_hostname].ruta_archivo_fuente_en_target }}"
+        dest: "{{ ee_staging_path }}/"
+        flat: yes
+- name: Copiar archivo del EE al filesystem del Host RHEL de AWX
+  hosts: localhost
+  connection: local 
+  gather_facts: false
+  vars:
+    awx_rhel_host_inventory_name: 10.72.1.47
+    archivo_fuente_en_ee: "{{ hostvars[groups['Final_Linux_Target'][0]].ee_staging_path }}/{{ hostvars[groups['Final_Linux_Target'][0]].retrieved_file_name_in_ee }}"
+    destino_final_en_rhel: "/tmp/{{ hostvars[groups['Final_Linux_Target'][0]].retrieved_file_name_in_ee }}" 
+  tasks:
+    - name: "Verificar que el archivo {{ archivo_fuente_en_ee }} existe en el EE"
+      ansible.builtin.stat:
+        path: "{{ archivo_fuente_en_ee }}"
+      register: ee_file_stat
+
+    - name: "DEBUG: Info del archivo en EE"
+      ansible.builtin.debug:
+        msg: "Archivo a copiar desde EE: {{ archivo_fuente_en_ee }}. ¿Existe?: {{ ee_file_stat.stat.exists | default(false) }}"
+
+    - name: "Copiar '{{ archivo_fuente_en_ee }}' del EE al Host RHEL ({{ awx_rhel_host_inventory_name }})"
+      ansible.builtin.copy:
+        src: "{{ archivo_fuente_en_ee }}"
+        dest: "{{ destino_final_en_rhel }}"
+      delegate_to: "{{ awx_rhel_host_inventory_name }}"
+      when: ee_file_stat.stat.is_file is defined and ee_file_stat.stat.is_file
