@@ -40,4 +40,4 @@
         src: "{{ archivo_fuente_en_ee }}"
         dest: "{{ destino_final_en_rhel }}"
       delegate_to: "{{ awx_rhel_host_inventory_name }}"
-      when: ee_file_stat.stat.is_file is defined and ee_file_stat.stat.is_file
+  #    when: ee_file_stat.stat.is_file is defined and ee_file_stat.stat.is_file
