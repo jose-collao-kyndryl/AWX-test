@@ -1,5 +1,5 @@
-- name: Prueba de copia para el filesystem local
-  hosts: all
+- name: Traer archivo del Target Final al Entorno de Ejecución (EE)
+  hosts: 10.72.1.40
   gather_facts: false
   become: false
   vars:
