@@ -1,5 +1,5 @@
 - name: Traer archivo del Target Final al Entorno de Ejecución (EE)
-  hosts: 10.72.1.40
+  hosts: cg4_groibmrly01
   gather_facts: false
   become: false
   vars:
@@ -22,8 +22,8 @@
   connection: local 
   gather_facts: false
   vars:
-    awx_rhel_host_inventory_name: 10.72.1.47
-    archivo_fuente_en_ee: "{{ hostvars[groups['Final_Linux_Target'][0]].ee_staging_path }}/{{ hostvars[groups['Final_Linux_Target'][0]].retrieved_file_name_in_ee }}"
+    awx_rhel_host_inventory_name: cg4_groibmrly01
+    archivo_fuente_en_ee: "{{ hostvars[groups['CG4_LINUX'][0]].ee_staging_path }}/{{ hostvars[groups['Final_Linux_Target'][0]].retrieved_file_name_in_ee }}"
     destino_final_en_rhel: "/tmp/{{ hostvars[groups['Final_Linux_Target'][0]].retrieved_file_name_in_ee }}" 
   tasks:
     - name: "Verificar que el archivo {{ archivo_fuente_en_ee }} existe en el EE"
