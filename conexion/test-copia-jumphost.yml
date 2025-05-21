@@ -17,7 +17,7 @@
   gather_facts: false
   vars:
     nombre_archivo_a_tranferir: "Kyndryl_19may2025_GROIBMRLY01.mef3"
-    ruta_archivo_en_ee: "/tmp/{{ nombre_archivo_transferir }}_fetched"
+    ruta_archivo_en_ee: "/tmp/{{ nombre_archivo_a_tranferir }}_fetched"
     ruta_destino_en_rhel: "/tmp/"
   tasks:
     - name: "Verificar que el archivo {{ nombre_archivo_a_tranferir }} existe en el EE"
@@ -32,7 +32,7 @@
     - name: "Copiar '{{ nombre_archivo_a_tranferir }}' del EE al Host RHEL"
       ansible.builtin.copy:
         src: "{{ ruta_archivo_en_ee }}"
-        dest: "{{ ruta_destino_en_rhel }}{{ nombre_archivo_transferir }}"
+        dest: "{{ ruta_destino_en_rhel }}{{ nombre_archivo_a_tranferir }}"
         mode: '0644'
       delegate_to: localhost
   #    when: ee_file_stat.stat.is_file is defined and ee_file_stat.stat.is_file
