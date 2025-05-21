@@ -14,7 +14,7 @@
     delegate_to: localhost
   - name: "Hacer Fetch del archivo '{{ hostvars[inventory_hostname].ruta_archivo_fuente_en_target }}' desde {{ inventory_hostname }} al EE"
     ansible.builtin.fetch:
-        src: "{{ hostvars[inventory_hostname].ruta_archivo_fuente_en_target }}"
+        src: "{{ hostvars[inventory_hostname].ruta_del_archivo_a_recuperar }}"
         dest: "{{ ee_staging_path }}/"
         flat: yes
 - name: Copiar archivo del EE al filesystem del Host RHEL de AWX
