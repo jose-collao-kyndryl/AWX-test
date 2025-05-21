@@ -7,12 +7,12 @@
     retrieved_file_name_in_ee: "{{ hostvars[inventory_hostname].ruta_del_archivo_a_recuperar | basename }}"
   tasks:
   - name: "Crear directorio de staging en el EE"
-      ansible.builtin.file:
+    ansible.builtin.file:
         path: "{{ ee_staging_path }}"
         state: directory
-      delegate_to: localhost
+    delegate_to: localhost
   - name: "Hacer Fetch del archivo '{{ hostvars[inventory_hostname].ruta_archivo_fuente_en_target }}' desde {{ inventory_hostname }} al EE"
-      ansible.builtin.fetch:
+    ansible.builtin.fetch:
         src: "{{ hostvars[inventory_hostname].ruta_archivo_fuente_en_target }}"
         dest: "{{ ee_staging_path }}/"
         flat: yes
