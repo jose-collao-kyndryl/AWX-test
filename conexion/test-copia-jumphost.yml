@@ -34,5 +34,4 @@
         src: "{{ ruta_archivo_en_ee }}"
         dest: "{{ ruta_destino_en_rhel }}{{ nombre_archivo_a_tranferir }}"
         mode: '0644'
-      delegate_to: localhost
   #    when: ee_file_stat.stat.is_file is defined and ee_file_stat.stat.is_file
