@@ -5,6 +5,7 @@
   vars:
     ee_staging_path: "/runner/project/retrieved_artifact" 
     retrieved_file_name_in_ee: "{{ hostvars[inventory_hostname].ruta_del_archivo_a_recuperar | basename }}"
+    ruta_del_archivo_a_recuperar: "/tmp/Kyndryl_19may2025_GROIBMRLY01.mef3"
   tasks:
   - name: "Crear directorio de staging en el EE"
     ansible.builtin.file:
