@@ -17,7 +17,7 @@
         src: "{{ruta_del_archivo}}/{{ nombre_archivo_a_tranferir }}"
         dest: "{{ ruta_archivo_en_ee }}"
         flat: yes
-    when: end_file_stat.stat.is_file is defined and end_file_stat.stat.is_file
+    when: end_file_stat.stat.exists
 - name: Copiar archivo del EE al filesystem del Host RHEL de AWX
   hosts: "{{ servidor_awx }}"
   gather_facts: false
