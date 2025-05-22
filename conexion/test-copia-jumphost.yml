@@ -9,7 +9,7 @@
         dest: "{{ ruta_archivo_en_ee }}"
         flat: yes
 - name: Copiar archivo del EE al filesystem del Host RHEL de AWX
-  hosts: 10.72.1.47
+  hosts: "{{ servidor_awx }}"
   gather_facts: false
   tasks:
     - name: "Verificar que el archivo {{ nombre_archivo_a_tranferir }} existe en el EE"
