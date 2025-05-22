@@ -3,7 +3,7 @@
   gather_facts: false
   become: false
   tasks:
-  - name: "Hacer Fetch del archivo '{{ nombre_archivo_origen }}' desde {{ inventory_hostname }} al EE"
+  - name: "Hacer Fetch del archivo '{{ nombre_archivo_a_tranferir }}' desde {{ inventory_hostname }} al EE"
     ansible.builtin.fetch:
         src: "{{ ruta_del_archivo_a_recuperar }}"
         dest: "{{ ee_staging_path }}"
