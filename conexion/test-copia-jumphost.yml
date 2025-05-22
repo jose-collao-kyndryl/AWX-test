@@ -2,10 +2,10 @@
   hosts: cg4_groibmrly01
   gather_facts: false
   become: false
-  vars:
-    nombre_archivo_origen: "Kyndryl_19may2025_GROIBMRLY01.mef3"
-    ee_staging_path: "/tmp/{{ nombre_archivo_origen }}_fetched" 
-    ruta_del_archivo_a_recuperar: "/tmp/{{ nombre_archivo_origen }}"
+#  vars:
+#    nombre_archivo_origen: "Kyndryl_19may2025_GROIBMRLY01.mef3"
+#    ee_staging_path: "/tmp/{{ nombre_archivo_origen }}_fetched" 
+#    ruta_del_archivo_a_recuperar: "/tmp/{{ nombre_archivo_origen }}"
   tasks:
   - name: "Hacer Fetch del archivo '{{ nombre_archivo_origen }}' desde {{ inventory_hostname }} al EE"
     ansible.builtin.fetch:
@@ -15,10 +15,10 @@
 - name: Copiar archivo del EE al filesystem del Host RHEL de AWX
   hosts: 10.72.1.47
   gather_facts: false
-  vars:
-    nombre_archivo_a_tranferir: "Kyndryl_19may2025_GROIBMRLY01.mef3"
-    ruta_archivo_en_ee: "/tmp/{{ nombre_archivo_a_tranferir }}_fetched"
-    ruta_destino_en_rhel: "/tmp/"
+#  vars:
+#    nombre_archivo_a_tranferir: "Kyndryl_19may2025_GROIBMRLY01.mef3"
+#    ruta_archivo_en_ee: "/tmp/{{ nombre_archivo_a_tranferir }}_fetched"
+#    ruta_destino_en_rhel: "/tmp/"
   tasks:
     - name: "Verificar que el archivo {{ nombre_archivo_a_tranferir }} existe en el EE"
       ansible.builtin.stat:
