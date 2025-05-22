@@ -35,4 +35,4 @@
         src: "{{ ruta_archivo_en_ee }}"
         dest: "{{ ruta_destino_en_rhel }}/{{ nombre_archivo_a_tranferir }}"
         mode: '0644'
-    when: end_file_stat.stat.exists
+    when: ee_file_stat.stat.exists
