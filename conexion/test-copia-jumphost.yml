@@ -3,6 +3,15 @@
   gather_facts: false
   become: false
   tasks:
+  - name: "Verificar que el archivo {{ nombre_archivo_a_tranferir }} existe en el servidor final"
+      ansible.builtin.stat:
+        path: "{{ruta_del_archivo}}/{{ nombre_archivo_a_tranferir }}"
+      register: end_file_stat
+
+  - name: "DEBUG: Info del archivo en servidor final"
+    ansible.builtin.debug:
+        msg: "Archivo a copiar desde el servidor final: {{ ruta_del_archivo }}. ¿Existe?: {{ end_file_stat.stat.exists | default(false) }}"
+        
   - name: "Hacer Fetch del archivo '{{ nombre_archivo_a_tranferir }}' desde {{ inventory_hostname }} al EE"
     ansible.builtin.fetch:
         src: "{{ruta_del_archivo}}/{{ nombre_archivo_a_tranferir }}"
