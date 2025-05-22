@@ -1,5 +1,5 @@
 - name: Traer archivo del Target Final al Entorno de Ejecución (EE)
-  hosts: cg4_groibmrly01
+  hosts: "{{ dispositivos finales }}"
   gather_facts: false
   become: false
   tasks:
