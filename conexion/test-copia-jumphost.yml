@@ -8,7 +8,7 @@
         path: "{{ruta_del_archivo}}/{{ nombre_archivo_a_tranferir }}"
     register: end_file_stat
 
-  - name: "DEBUG: Info del archivo en servidor final"
+  - name: Info del archivo en servidor final
     ansible.builtin.debug:
         msg: "Archivo a copiar desde el servidor final: {{ ruta_del_archivo }}. ¿Existe?: {{ end_file_stat.stat.exists | default(false) }}"
         
@@ -27,7 +27,7 @@
        path: "{{ ruta_archivo_en_ee }}"
     register: ee_file_stat
 
-  - name: "DEBUG: Info del archivo en EE"
+  - name: Info del archivo en EE
     ansible.builtin.debug:
         msg: "Archivo a copiar desde EE: {{ ruta_archivo_en_ee }}. ¿Existe?: {{ ee_file_stat.stat.exists | default(false) }}"
   - name: "Copiar '{{ nombre_archivo_a_tranferir }}' del EE al Host RHEL"
