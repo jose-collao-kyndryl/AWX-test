@@ -21,18 +21,8 @@
   hosts: "{{ servidor_awx }}"
   gather_facts: false
   tasks:
-    - name: "Verificar que el archivo {{ nombre_archivo_a_tranferir }} existe en el EE"
-      ansible.builtin.stat:
-        path: "{{ ruta_archivo_en_ee }}"
-      register: ee_file_stat
-
-    - name: "DEBUG: Info del archivo en EE"
-      ansible.builtin.debug:
-        msg: "Archivo a copiar desde EE: {{ ruta_archivo_en_ee }}. ¿Existe?: {{ ee_file_stat.stat.exists | default(false) }}"
-
-    - name: "Copiar '{{ nombre_archivo_a_tranferir }}' del EE al Host RHEL"
-      ansible.builtin.copy:
+  - name: "Copiar '{{ nombre_archivo_a_tranferir }}' del EE al Host RHEL"
+    ansible.builtin.copy:
         src: "{{ ruta_archivo_en_ee }}"
         dest: "{{ ruta_destino_en_rhel }}/{{ nombre_archivo_a_tranferir }}"
         mode: '0644'
-  #    when: ee_file_stat.stat.is_file is defined and ee_file_stat.stat.is_file
