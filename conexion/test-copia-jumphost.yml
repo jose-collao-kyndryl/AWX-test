@@ -5,7 +5,7 @@
   tasks:
   - name: "Hacer Fetch del archivo '{{ nombre_archivo_a_tranferir }}' desde {{ inventory_hostname }} al EE"
     ansible.builtin.fetch:
-        src: "{{ruta_del_archivo}}/{{ nombre_archivo_origen }}"
+        src: "{{ruta_del_archivo}}/{{ nombre_archivo_a_tranferir }}"
         dest: "{{ ruta_archivo_en_ee }}"
         flat: yes
 - name: Copiar archivo del EE al filesystem del Host RHEL de AWX
