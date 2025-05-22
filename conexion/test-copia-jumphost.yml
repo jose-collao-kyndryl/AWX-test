@@ -11,9 +11,6 @@
 - name: Copiar archivo del EE al filesystem del Host RHEL de AWX
   hosts: "{{ servidor_awx }}"
   gather_facts: false
-  vars:
-     ansible_user: "{{ lookup('env', 'CUSTOM_SSH_USER') }}"
-     ansible_password: "{{ lookup('env', 'CUSTOM_SSH_PASSWORD') }}"
   tasks:
     - name: "Verificar que el archivo {{ nombre_archivo_a_tranferir }} existe en el EE"
       ansible.builtin.stat:
