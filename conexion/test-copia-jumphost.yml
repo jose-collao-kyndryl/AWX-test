@@ -4,9 +4,9 @@
   become: false
   tasks:
   - name: "Verificar que el archivo {{ nombre_archivo_a_tranferir }} existe en el servidor final"
-      ansible.builtin.stat:
+    ansible.builtin.stat:
         path: "{{ruta_del_archivo}}/{{ nombre_archivo_a_tranferir }}"
-      register: end_file_stat
+    register: end_file_stat
 
   - name: "DEBUG: Info del archivo en servidor final"
     ansible.builtin.debug:
