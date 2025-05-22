@@ -1,5 +1,5 @@
 - name: Traer archivo del Target Final al Entorno de Ejecución (EE)
-  hosts: "{{ dispositivos finales }}"
+  hosts: "{{ dispositivos_finales }}"
   gather_facts: false
   become: false
   tasks:
