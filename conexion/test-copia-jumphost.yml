@@ -13,7 +13,7 @@
   - name: "Buscar el archivo generado en {{ ruta_del_archivo }} del servidor final (multi-extensión)"
     ansible.builtin.find:
         paths: "{{ ruta_del_archivo }}"
-        patterns: "archivo_prueba.txt"
+        patterns: "{{ extensiones | map(lambda ext: 'Kyndryl_22may2025_' + current_host + ext) | list }}"
         #age: "-15m"
         age_stamp: mtime
     register: found_generated_files      
