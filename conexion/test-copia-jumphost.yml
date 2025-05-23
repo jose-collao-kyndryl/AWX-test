@@ -45,12 +45,12 @@
        path: "{{ ruta_archivo_en_ee }}/{{ file_to_process_path | basename }}"
     register: ee_file_stat
     delegate_to: localhost
-    when: file_to_process_path is defined
+    when: file_to_process_path is defined and fetch_result is successful
   - name: Info del archivo en EE
     ansible.builtin.debug:
         msg: "Archivo a copiar desde EE: {{ ruta_archivo_en_ee }}. ¿Existe?: {{ ee_file_stat.stat.exists | default(false) }}"
     delegate_to: localhost
-    when: file_to_process_path is defined
+    when: file_to_process_path is defined and fetch_result is successful
   - name: "Copiar {{ file_to_process_path | basename }} del EE al Host RHEL"
     ansible.builtin.copy:
         src: "{{ ruta_archivo_en_ee }}/{{ file_to_process_path | basename }}"
