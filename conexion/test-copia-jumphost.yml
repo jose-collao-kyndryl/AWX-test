@@ -25,7 +25,7 @@
   - name: "DEBUG: Archivo seleccionado para procesar"
     ansible.builtin.debug:
        var: file_to_process_path
-       when: file_to_process_path is defined
+    when: file_to_process_path is defined
   - name: "Advertir si no se encontró ningún archivo relevante"
     ansible.builtin.debug:
       msg: "No se encontró ningún archivo Kyndryl (.mef3, .mef, .mef4, .scm9) reciente para {{ inventory_hostname }} en {{ ruta_del_archivo }}."
