@@ -15,7 +15,7 @@
         paths: "{{ ruta_del_archivo }}"
         patterns: "{{ extensiones | map('regex_replace', '^\\.(.*)$', '(?i)^Kyndryl_.*_' + current_host + '\\.\\1$') | list }}"
         use_regex: true
-        #age: "-15m"
+        age: "-15m"
         age_stamp: mtime
     register: found_generated_files      
   - name: "DEBUG: Archivos generados encontrados"
