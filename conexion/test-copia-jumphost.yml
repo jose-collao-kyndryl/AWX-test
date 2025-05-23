@@ -11,6 +11,7 @@
     ansible.builtin.find:
         paths: "{{ ruta_del_archivo }}"
         patterns: "{{ posibles_extensiones | map('regex_replace', '^\\.(.*)$', 'Kyndryl_*_' + current_host_lower + '\\.\\1') | list }}"
+        age: "-15m"
         age_stamp: mtime
     register: found_generated_files      
   - name: "DEBUG: Archivos generados encontrados"
