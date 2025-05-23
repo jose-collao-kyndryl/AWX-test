@@ -1,26 +1,47 @@
 - name: Traer archivo del Target Final al Entorno de Ejecución (EE)
   hosts: "{{ dispositivos_finales }}"
-  gather_facts: false
+  gather_facts: true
   become: false
   tasks:
-  - name: "Verificar que el archivo {{ nombre_archivo_a_tranferir }} existe en el servidor final"
-    ansible.builtin.stat:
-        path: "{{ruta_del_archivo}}/{{ nombre_archivo_a_tranferir }}"
-    register: end_file_stat
-
-  - name: Info del archivo en servidor final
+  ### Tareas para Busqueda del archivo
+  - name: "Obtener nombre de host (minúsculas) para el patrón"
+    ansible.builtin.set_fact:
+       current_host_lower: "{{ inventory_hostname.split('.')[0] | lower }}"
+  - name: "Buscar el archivo generado en {{ ruta_del_archivo }} del servidor final (multi-extensión)"
+    ansible.builtin.find:
+        paths: "{{ ruta_del_archivo }}"
+        patterns: "{{ posibles_extensiones | map('regex_replace', '^\\.(.*)$', 'Kyndryl_*_' + current_host_lower + '\\.\\1') | list }}"
+        age_stamp: mtime
+    register: found_generated_files      
+  - name: "DEBUG: Archivos generados encontrados"
     ansible.builtin.debug:
-        msg: "Archivo a copiar desde el servidor final: {{ ruta_del_archivo }}. ¿Existe?: {{ end_file_stat.stat.exists | default(false) }}"
+        var: found_generated_files.files
+    when: found_generated_files.files | length > 0
+  - name: "Seleccionar el archivo a procesar (el más reciente si hay varios)"
+    ansible.builtin.set_fact:
+        file_to_process_path: "{{ (found_generated_files.files | sort(attribute='mtime', reverse=true) | first).path | default(omit) }}"
+    when: found_generated_files.files | length > 0
+  - name: "DEBUG: Archivo seleccionado para procesar"
+    ansible.builtin.debug:
+       var: file_to_process_path
+       when: file_to_process_path is defined
+  - name: "Advertir si no se encontró ningún archivo relevante"
+    ansible.builtin.debug:
+      msg: "No se encontró ningún archivo Kyndryl (.mef3, .mef, .mef4, .scm9) reciente para {{ inventory_hostname }} en {{ ruta_del_archivo }}."
+    when: file_to_process_path is not defined
+    
+### Tareas para copiado del archivo al servidor AWX
         
-  - name: "Hacer Fetch del archivo '{{ nombre_archivo_a_tranferir }}' desde {{ inventory_hostname }} al EE"
+  - name: "Hacer Fetch del archivo '{{ file_to_process_path | basename }}' desde {{ inventory_hostname }} al EE"
     ansible.builtin.fetch:
-        src: "{{ruta_del_archivo}}/{{ nombre_archivo_a_tranferir }}"
-        dest: "{{ ruta_archivo_en_ee }}"
+        src: "{{ file_to_process_path }}"
+        dest: "{{ ruta_archivo_en_ee }}/{{ file_to_process_path | basename }}"
         flat: yes
-    when: end_file_stat.stat.exists
-  - name: "Verificar que el archivo {{ nombre_archivo_a_tranferir }} existe en el EE"
+    when: file_to_process_path is defined
+    register: fetch_result
+  - name: "Verificar que el archivo '{{ file_to_process_path | basename }}' existe en el EE"
     ansible.builtin.stat:
-       path: "{{ ruta_archivo_en_ee }}"
+       path: "{{ ruta_archivo_en_ee }}/{{ file_to_process_path | basename }}"
     register: ee_file_stat
     delegate_to: localhost
   - name: Info del archivo en EE
@@ -29,8 +50,8 @@
     delegate_to: localhost
   - name: "Copiar '{{ nombre_archivo_a_tranferir }}' del EE al Host RHEL"
     ansible.builtin.copy:
-        src: "{{ ruta_archivo_en_ee }}"
-        dest: "{{ ruta_destino_en_rhel }}/{{ nombre_archivo_a_tranferir }}"
+        src: "{{ ruta_archivo_en_ee_base }}/{{ file_to_process_path | basename }}"
+        dest: "{{ ruta_destino_en_rhel }}/{{ file_to_process_path | basename }}"
         mode: '0644'
-    when: ee_file_stat.stat.exists
+    when: file_to_process_path is defined and fetch_result is successful and ee_file_stat.stat.exists
     delegate_to: "{{ servidor_awx }}"
