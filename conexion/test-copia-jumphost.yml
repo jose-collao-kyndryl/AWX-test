@@ -7,6 +7,9 @@
   - name: "Obtener nombre de host (minúsculas) para el patrón"
     ansible.builtin.set_fact:
        current_host: "{{ ansible_hostname | lower }}"
+  - name: "DEBUG: Valor de current_host para el patrón"
+    ansible.builtin.debug:
+      msg: "current_host es: '{{ current_host }}'"     
   - name: "Buscar el archivo generado en {{ ruta_del_archivo }} del servidor final (multi-extensión)"
     ansible.builtin.find:
         paths: "{{ ruta_del_archivo }}"
