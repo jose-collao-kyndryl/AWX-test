@@ -6,11 +6,11 @@
   ### Tareas para Busqueda del archivo
   - name: "Obtener nombre de host (minúsculas) para el patrón"
     ansible.builtin.set_fact:
-       current_host_lower: "{{ inventory_hostname.split('.')[0] | lower }}"
+       current_host: "{{ ansible_hostname }}"
   - name: "Buscar el archivo generado en {{ ruta_del_archivo }} del servidor final (multi-extensión)"
     ansible.builtin.find:
         paths: "{{ ruta_del_archivo }}"
-        patterns: "{{ extensiones | map('regex_replace', '^\\.(.*)$', 'Kyndryl_*_' + current_host_lower + '\\.\\1') | list }}"
+        patterns: "{{ extensiones | map('regex_replace', '^\\.(.*)$', 'Kyndryl_*_' + current_host + '\\.\\1') | list }}"
         age: "-15m"
         age_stamp: mtime
     register: found_generated_files      
