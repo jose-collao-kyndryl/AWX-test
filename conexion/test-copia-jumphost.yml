@@ -33,7 +33,7 @@
     
 ### Tareas para copiado del archivo al servidor AWX
         
-  - name: "Hacer Fetch del archivo {{ file_to_process_path | basename }} desde {{ ansible_hostname }} al EE"
+  - name: Hacer Fetch del archivo {{ file_to_process_path | basename }} desde {{ ansible_hostname }} al EE
     ansible.builtin.fetch:
         src: "{{ file_to_process_path }}"
         dest: "{{ ruta_archivo_en_ee }}/{{ file_to_process_path | basename }}"
