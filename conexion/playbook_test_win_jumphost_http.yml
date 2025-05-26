@@ -1,0 +1,38 @@
+---
+- name: Probar Conexion Windows via Jumphost (ssh -L para HTTP/5985)
+  hosts: windows_server_via_jump
+  gather_facts: false
+  pre_tasks:
+    - name: Establecer túnel SSH (Local Port Forwarding para WinRM HTTP)
+      ansible.builtin.command: >
+        ssh -f -N -L {{ local_tunnel_port_for_ssh_command }}:{{ target_actual_ip }}:{{ target_actual_winrm_port }}
+        -o StrictHostKeyChecking=no
+        -o UserKnownHostsFile=/dev/null
+        -o ExitOnForwardFailure=yes
+        -o ServerAliveInterval=60
+        {{ jumphost_user }}@{{ jumphost_ip }}
+      delegate_to: localhost
+      changed_when: false
+      run_once: true
+      register: tunnel_setup_status
+      failed_when: "tunnel_setup_status.rc != 0 and 'Address already in use' not in tunnel_setup_status.stderr and 'already forwarding port' not in tunnel_setup_status.stderr"
+    - name: Esperar a que el puerto del túnel local {{ local_tunnel_port_for_ssh_command }} esté activo
+      ansible.builtin.wait_for:
+        host: 127.0.0.1
+        port: "{{ local_tunnel_port_for_ssh_command }}"
+        timeout: 20
+        delay: 1
+      delegate_to: localhost
+      run_once: true
+  tasks:
+    - name: Verificar conexión WinRM con win_ping
+      ansible.windows.win_ping:
+  post_tasks:
+    - name: Terminar túnel SSH
+      ansible.builtin.command: >
+        pkill -f "ssh -f -N -L {{ local_tunnel_port_for_ssh_command }}:{{ target_actual_ip }}:{{ target_actual_winrm_port }}.*{{ jumphost_user }}@{{ jumphost_ip }}"
+      delegate_to: localhost
+      changed_when: false
+      failed_when: false
+      always_run: true
+      run_once: true
