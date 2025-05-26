@@ -25,6 +25,10 @@
       delegate_to: localhost
       run_once: true
   tasks:
+    - name: Mostrar variables de conexión efectivas  # <--- AÑADE ESTA TAREA
+      ansible.builtin.debug:
+        msg: "HOST: {{ inventory_hostname }}, ANSIBLE_HOST: {{ ansible_host }}, ANSIBLE_PORT: {{ ansible_port }}, ANSIBLE_USER: {{ ansible_user }}, WINRM_SCHEME: {{ ansible_winrm_scheme }}, WINRM_TRANSPORT: {{ ansible_winrm_transport }}"
+      # run_once: true # Puedes quitar run_once si solo tienes un host o quieres verlo para cada uno
     - name: Verificar conexión WinRM con win_ping
       ansible.windows.win_ping:
   post_tasks:
