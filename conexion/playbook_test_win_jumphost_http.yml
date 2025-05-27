@@ -11,7 +11,7 @@
         -o UserKnownHostsFile=/dev/null
         -o ExitOnForwardFailure=yes
         -o ServerAliveInterval=60
-        cg4jpat1@10.72.3.245  # Usuario y IP del Jumphost hardcodeados
+        cg4jpat1@10.72.3.245
       delegate_to: localhost
       changed_when: false
       run_once: true
