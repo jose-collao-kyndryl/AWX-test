@@ -77,4 +77,3 @@
       run_once: yes
       args:
         executable: /bin/bash
-      always_run: yes
