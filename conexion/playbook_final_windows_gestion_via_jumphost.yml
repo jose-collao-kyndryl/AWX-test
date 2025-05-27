@@ -1,0 +1,77 @@
+---
+- name: Depurar Establecimiento de Túnel SSH
+  hosts: windows_server_via_jump
+  gather_facts: false
+  pre_tasks:
+    - name: Mostrar parámetros de túnel que se usarán (desde inventario)
+      ansible.builtin.debug:
+        msg: "TUNNEL DEBUG: LocalPort={{ local_tunnel_port_for_ssh_command }}, TargetIP={{ target_actual_ip }}, TargetPort={{ target_actual_winrm_port }}, JumpUser={{ jumphost_user }}, JumpIP={{ jumphost_ip }}"
+      delegate_to: localhost
+      run_once: true
+
+    - name: Intentar establecer túnel SSH y capturar salida DETALLADA
+      ansible.builtin.command: >
+        ssh -vvv -f -N -L {{ local_tunnel_port_for_ssh_command }}:{{ target_actual_ip }}:{{ target_actual_winrm_port }}
+        -o StrictHostKeyChecking=no
+        -o UserKnownHostsFile=/dev/null
+        -o ExitOnForwardFailure=yes
+        -o ServerAliveInterval=60
+        -o ConnectTimeout=15
+        {{ jumphost_user }}@{{ jumphost_ip }}
+      delegate_to: localhost
+      changed_when: false
+      run_once: true
+      register: tunnel_setup_command_output
+      failed_when: false
+
+    - name: Mostrar salida completa del comando SSH del túnel
+      ansible.builtin.debug:
+        var: tunnel_setup_command_output
+      delegate_to: localhost
+      run_once: true
+
+    - name: Esperar unos segundos para que el túnel se establezca
+      ansible.builtin.pause:
+        seconds: 7
+      delegate_to: localhost
+      run_once: true
+      when: tunnel_setup_command_output.rc == 0
+
+    - name: Verificar si el puerto local del túnel está escuchando
+      ansible.builtin.command: "netstat -ltn | grep LISTEN | grep :{{ local_tunnel_port_for_ssh_command }}" # Cambiado a netstat
+      delegate_to: localhost
+      changed_when: false
+      run_once: true
+      register: port_check_output
+      failed_when: false
+
+    - name: Mostrar salida de la verificación del puerto
+      ansible.builtin.debug:
+        var: port_check_output
+      delegate_to: localhost
+      run_once: true
+
+  tasks:
+    - name: Mostrar variables de conexión WinRM que Ansible USARÍA
+      ansible.builtin.debug:
+        msg: "WINRM DEBUG: HOST={{ inventory_hostname }}, ANSIBLE_HOST={{ ansible_host }}, ANSIBLE_PORT={{ ansible_port }}, ANSIBLE_USER={{ ansible_user }}, WINRM_SCHEME={{ ansible_winrm_scheme }}, TRANSPORT={{ ansible_winrm_transport }}"
+      run_once: true
+
+    - name: Intentar un win_ping si todo lo anterior parece bien
+      ansible.windows.win_ping:
+      when: tunnel_setup_command_output.rc == 0
+
+  post_tasks:
+    - name: Intentar terminar cualquier proceso de túnel
+      ansible.builtin.shell: |
+        PID_TO_KILL=$(ps aux | grep "ssh -vvv -f -N -L {{ local_tunnel_port_for_ssh_command }}:{{ target_actual_ip }}:{{ target_actual_winrm_port }}" | grep "{{ jumphost_user }}@{{ jumphost_ip }}" | grep -v grep | awk '{print $2}')
+        if [ -n "$PID_TO_KILL" ]; then
+          kill $PID_TO_KILL && echo "Killed tunnel process $PID_TO_KILL for port {{ local_tunnel_port_for_ssh_command }}"
+        else
+          echo "No tunnel process found to kill for port {{ local_tunnel_port_for_ssh_command }}."
+        fi
+      delegate_to: localhost
+      changed_when: false
+      run_once: true
+      args:
+        executable: /bin/bash
