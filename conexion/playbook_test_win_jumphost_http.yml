@@ -1,30 +1,24 @@
+# playbook_debug_tunnel_establishment.yml (el que estabas usando)
 ---
 - name: Depurar Establecimiento de Túnel SSH
   hosts: windows_server_via_jump
   gather_facts: false
-  vars:
-    _local_tunnel_port_for_playbook: 59850
-    _target_actual_ip_playbook: "10.72.1.167"
-    _target_actual_winrm_port_playbook: 5985
-    _jumphost_user_playbook: "cg4jpat1"
-    _jumphost_ip_playbook: "10.72.3.245"
-
   pre_tasks:
-    - name: Mostrar parámetros de túnel que se usarán
+    - name: Mostrar parámetros de túnel que se usarán (desde inventario)
       ansible.builtin.debug:
-        msg: "TUNNEL DEBUG: LocalPort={{ _local_tunnel_port_for_playbook }}, TargetIP={{ _target_actual_ip_playbook }}, TargetPort={{ _target_actual_winrm_port_playbook }}, JumpUser={{ _jumphost_user_playbook }}, JumpIP={{ _jumphost_ip_playbook }}"
+        msg: "TUNNEL DEBUG: LocalPort={{ local_tunnel_port_for_ssh_command }}, TargetIP={{ target_actual_ip }}, TargetPort={{ target_actual_winrm_port }}, JumpUser={{ jumphost_user }}, JumpIP={{ jumphost_ip }}"
       delegate_to: localhost
       run_once: true
 
-    - name: Intentar establecer túnel SSH y capturar salida
+    - name: Intentar establecer túnel SSH y capturar salida DETALLADA
       ansible.builtin.command: >
-        ssh -vvv -f -N -L {{ _local_tunnel_port_for_playbook }}:{{ _target_actual_ip_playbook }}:{{ _target_actual_winrm_port_playbook }}
+        ssh -vvv -f -N -L {{ local_tunnel_port_for_ssh_command }}:{{ target_actual_ip }}:{{ target_actual_winrm_port }}
         -o StrictHostKeyChecking=no
         -o UserKnownHostsFile=/dev/null
         -o ExitOnForwardFailure=yes
         -o ServerAliveInterval=60
-        -o ConnectTimeout=10
-        {{ _jumphost_user_playbook }}@{{ _jumphost_ip_playbook }}
+        -o ConnectTimeout=15
+        {{ jumphost_user }}@{{ jumphost_ip }}
       delegate_to: localhost
       changed_when: false
       run_once: true
@@ -37,15 +31,15 @@
       delegate_to: localhost
       run_once: true
 
-    - name: Esperar unos segundos para que el túnel (si tuvo éxito) se establezca
+    - name: Esperar unos segundos para que el túnel se establezca
       ansible.builtin.pause:
-        seconds: 5
+        seconds: 7
       delegate_to: localhost
       run_once: true
       when: tunnel_setup_command_output.rc == 0
 
     - name: Verificar si el puerto local del túnel está escuchando
-      ansible.builtin.command: "ss -ltn src :{{ _local_tunnel_port_for_playbook }}"
+      ansible.builtin.command: "netstat -ltn | grep LISTEN | grep :{{ local_tunnel_port_for_ssh_command }}" # Cambiado a netstat
       delegate_to: localhost
       changed_when: false
       run_once: true
@@ -61,22 +55,21 @@
   tasks:
     - name: Mostrar variables de conexión WinRM que Ansible USARÍA
       ansible.builtin.debug:
-        msg: "WINRM DEBUG: HOST={{ inventory_hostname }}, ANSIBLE_HOST={{ ansible_host }}, ANSIBLE_PORT={{ ansible_port }}, ANSIBLE_USER={{ ansible_user }}, WINRM_SCHEME={{ ansible_winrm_scheme }}"
+        msg: "WINRM DEBUG: HOST={{ inventory_hostname }}, ANSIBLE_HOST={{ ansible_host }}, ANSIBLE_PORT={{ ansible_port }}, ANSIBLE_USER={{ ansible_user }}, WINRM_SCHEME={{ ansible_winrm_scheme }}, TRANSPORT={{ ansible_winrm_transport }}"
       run_once: true
 
-    - name: Tarea placeholder (no se ejecutará si hay fallo de conexión antes)
-      ansible.builtin.debug:
-        msg: "Si llegamos aquí y el túnel está arriba (verificar logs anteriores), el problema de conexión WinRM es por cómo Ansible usa ansible_port."
-      run_once: true
+    - name: Intentar un win_ping si todo lo anterior parece bien
+      ansible.windows.win_ping:
+      when: tunnel_setup_command_output.rc == 0 and (port_check_output.stdout_lines | length > 0 or port_check_output.rc == 0) # Intentar solo si el túnel parece estar bien
 
   post_tasks:
-    - name: Intentar terminar cualquier proceso de túnel (mejorado)
+    - name: Intentar terminar cualquier proceso de túnel
       ansible.builtin.shell: |
-        PID_TO_KILL=$(ps aux | grep "ssh -v -f -N -L {{ _local_tunnel_port_for_playbook }}:{{ _target_actual_ip_playbook }}:{{ _target_actual_winrm_port_playbook }}" | grep "{{ _jumphost_user_playbook }}@{{ _jumphost_ip_playbook }}" | grep -v grep | awk '{print $2}')
+        PID_TO_KILL=$(ps aux | grep "ssh -vvv -f -N -L {{ local_tunnel_port_for_ssh_command }}:{{ target_actual_ip }}:{{ target_actual_winrm_port }}" | grep "{{ jumphost_user }}@{{ jumphost_ip }}" | grep -v grep | awk '{print $2}')
         if [ -n "$PID_TO_KILL" ]; then
-          kill $PID_TO_KILL && echo "Killed tunnel process $PID_TO_KILL"
+          kill $PID_TO_KILL && echo "Killed tunnel process $PID_TO_KILL for port {{ local_tunnel_port_for_ssh_command }}"
         else
-          echo "No tunnel process found to kill for port {{ _local_tunnel_port_for_playbook }}."
+          echo "No tunnel process found to kill for port {{ local_tunnel_port_for_ssh_command }}."
         fi
       delegate_to: localhost
       changed_when: false
