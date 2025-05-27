@@ -1,42 +1,46 @@
 ---
-- name: Probar Conexion Windows via Jumphost (ssh -L para HTTP/5985)
-  hosts: windows_server_via_jump
+- name: Probar Conexion Windows via Jumphost (ssh -L HARDCODED para HTTP/5985)
+  hosts: windows_server_via_jump # Este nombre debe existir en tu inventario de AWX
   gather_facts: false
+
   pre_tasks:
-    - name: Establecer túnel SSH (Local Port Forwarding para WinRM HTTP)
+    - name: Establecer túnel SSH (Local Port Forwarding para WinRM HTTP - hardcodeado)
       ansible.builtin.command: >
-        ssh -f -N -L {{ local_tunnel_port_for_ssh_command }}:{{ target_actual_ip }}:{{ target_actual_winrm_port }}
+        ssh -f -N -L 59850:10.72.1.167:5985
         -o StrictHostKeyChecking=no
         -o UserKnownHostsFile=/dev/null
         -o ExitOnForwardFailure=yes
         -o ServerAliveInterval=60
-        {{ jumphost_user }}@{{ jumphost_ip }}
+        cg4jpat1@10.72.3.245  # Usuario y IP del Jumphost hardcodeados
       delegate_to: localhost
       changed_when: false
       run_once: true
       register: tunnel_setup_status
       failed_when: "tunnel_setup_status.rc != 0 and 'Address already in use' not in tunnel_setup_status.stderr and 'already forwarding port' not in tunnel_setup_status.stderr"
-    - name: Esperar a que el puerto del túnel local {{ local_tunnel_port_for_ssh_command }} esté activo
+
+    - name: Esperar a que el puerto del túnel local 59850 esté activo (hardcodeado)
       ansible.builtin.wait_for:
         host: 127.0.0.1
-        port: "{{ local_tunnel_port_for_ssh_command }}"
+        port: 59850
         timeout: 20
         delay: 1
       delegate_to: localhost
       run_once: true
+
   tasks:
-    - name: Mostrar variables de conexión efectivas  # <--- AÑADE ESTA TAREA
+    - name: Mostrar variables de conexión efectivas
       ansible.builtin.debug:
         msg: "HOST: {{ inventory_hostname }}, ANSIBLE_HOST: {{ ansible_host }}, ANSIBLE_PORT: {{ ansible_port }}, ANSIBLE_USER: {{ ansible_user }}, WINRM_SCHEME: {{ ansible_winrm_scheme }}, WINRM_TRANSPORT: {{ ansible_winrm_transport }}"
-      # run_once: true # Puedes quitar run_once si solo tienes un host o quieres verlo para cada uno
+
     - name: Verificar conexión WinRM con win_ping
       ansible.windows.win_ping:
+
   post_tasks:
-    - name: Terminar túnel SSH
+    - name: Terminar túnel SSH (hardcodeado)
       ansible.builtin.command: >
-        pkill -f "ssh -f -N -L {{ local_tunnel_port_for_ssh_command }}:{{ target_actual_ip }}:{{ target_actual_winrm_port }}.*{{ jumphost_user }}@{{ jumphost_ip }}"
+        pkill -f "ssh -f -N -L 59850:10.72.1.167:5985.*cg4jpat1@10.72.3.245"
       delegate_to: localhost
       changed_when: false
       failed_when: false
-   #   always_run: true
+      # always_run: true
       run_once: true
