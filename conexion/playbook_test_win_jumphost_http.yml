@@ -1,4 +1,3 @@
-# playbook_debug_tunnel_establishment.yml (el que estabas usando)
 ---
 - name: Depurar Establecimiento de Túnel SSH
   hosts: windows_server_via_jump
