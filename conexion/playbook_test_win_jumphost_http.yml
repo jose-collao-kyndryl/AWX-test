@@ -60,7 +60,7 @@
 
     - name: Intentar un win_ping si todo lo anterior parece bien
       ansible.windows.win_ping:
-      when: tunnel_setup_command_output.rc == 0 and (port_check_output.stdout_lines | length > 0 or port_check_output.rc == 0) # Intentar solo si el túnel parece estar bien
+      when: tunnel_setup_command_output.rc == 0
 
   post_tasks:
     - name: Intentar terminar cualquier proceso de túnel
