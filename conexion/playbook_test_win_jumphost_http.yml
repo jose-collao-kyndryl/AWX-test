@@ -18,7 +18,7 @@
 
     - name: Intentar establecer túnel SSH y capturar salida
       ansible.builtin.command: >
-        ssh -v -f -N -L {{ _local_tunnel_port_for_playbook }}:{{ _target_actual_ip_playbook }}:{{ _target_actual_winrm_port_playbook }}
+        ssh -vvv -f -N -L {{ _local_tunnel_port_for_playbook }}:{{ _target_actual_ip_playbook }}:{{ _target_actual_winrm_port_playbook }}
         -o StrictHostKeyChecking=no
         -o UserKnownHostsFile=/dev/null
         -o ExitOnForwardFailure=yes
