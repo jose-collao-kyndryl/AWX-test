@@ -1,13 +1,13 @@
 ---
 - name: Depurar Establecimiento de Túnel SSH
   hosts: windows_server_via_jump
-  gather_facts: false
+  gather_facts: no
   pre_tasks:
     - name: Mostrar parámetros de túnel que se usarán (desde inventario)
       ansible.builtin.debug:
         msg: "TUNNEL DEBUG: LocalPort={{ local_tunnel_port_for_ssh_command }}, TargetIP={{ target_actual_ip }}, TargetPort={{ target_actual_winrm_port }}, JumpUser={{ jumphost_user }}, JumpIP={{ jumphost_ip }}"
       delegate_to: localhost
-      run_once: true
+      run_once: yes
 
     - name: Estableciendo túnel SSH
       ansible.builtin.command: >
@@ -19,16 +19,16 @@
         -o ConnectTimeout=15
         {{ jumphost_user }}@{{ jumphost_ip }}
       delegate_to: localhost
-      changed_when: false
-      run_once: true
+      changed_when: no
+      run_once: yes
       register: tunnel_setup_status
-      failed_when: false
+      failed_when: no
 
     - name: Mostrar salida completa del comando SSH del túnel
       ansible.builtin.debug:
         var: tunnel_setup_status
       delegate_to: localhost
-      run_once: true
+      run_once: yes
 
     - name: Esperar a que el túnel se establezca y el puerto esté activo
       ansible.builtin.wait_for:
@@ -38,13 +38,13 @@
         delay: 2 # Damos un par de segundos de delay
         state: started # Asegurarse que el puerto esté "escuchando"
       delegate_to: localhost 
-      run_once: true
+      run_once: yes
       when: tunnel_setup_status.rc == 0
   tasks:
     - name: Mostrar variables de conexión WinRM que Ansible USARÍA
       ansible.builtin.debug:
         msg: "WINRM DEBUG: HOST={{ inventory_hostname }}, ANSIBLE_HOST={{ ansible_host }}, ANSIBLE_PORT={{ ansible_port }}, ANSIBLE_USER={{ ansible_user }}, WINRM_SCHEME={{ ansible_winrm_scheme }}, TRANSPORT={{ ansible_winrm_transport }}"
-      run_once: true
+      run_once: yes
 
     - name: Intentar un win_ping si todo lo anterior parece bien
       ansible.windows.win_ping:
@@ -73,7 +73,8 @@
           echo "No tunnel process found to kill for port {{ local_tunnel_port_for_ssh_command }}."
         fi
       delegate_to: localhost
-      changed_when: false
-      run_once: true
+      changed_when: no
+      run_once: yes
       args:
         executable: /bin/bash
+      always_run: yes
