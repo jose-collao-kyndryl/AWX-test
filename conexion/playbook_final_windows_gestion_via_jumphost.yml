@@ -80,12 +80,16 @@
         - domain_role.stdout is defined
         - domain_role.stdout | int == 3
   post_tasks:
-    - name: Intentar terminar cualquier proceso de túnel
-      ansible.builtin.command: >
-        pkill -f "ssh -vvv -f -N -L {{ local_tunnel_port_for_ssh_command }}:{{ target_actual_ip }}:{{ target_actual_winrm_port }}.*{{ jumphost_user }}@{{ jumphost_ip }}"
+    - name: Bloque para asegurar la terminación del túnel
+      run_once: true
       delegate_to: localhost
-      changed_when: no
-      run_once: yes
-      always_run: true
-      args:
-        executable: /bin/bash
+      block:
+        - name: Marcar que el bloque principal de post_tasks fue alcanzado (opcional para debug)
+          ansible.builtin.debug:
+            msg: "Entrando al bloque de limpieza del túnel."
+      always:
+        - name: Intentar terminar túnel SSH con pkill (dentro de always)
+          ansible.builtin.command: >
+            pkill -f "ssh -vvv -f -N -L {{ local_tunnel_port_for_ssh_command }}:{{ target_actual_ip }}:{{ target_actual_winrm_port }}.*{{ jumphost_user }}@{{ jumphost_ip }}"
+          changed_when: false
+          failed_when: false
