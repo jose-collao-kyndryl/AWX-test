@@ -1,46 +1,85 @@
 ---
-- name: Probar Conexion Windows via Jumphost (ssh -L HARDCODED para HTTP/5985)
-  hosts: windows_server_via_jump # Este nombre debe existir en tu inventario de AWX
+- name: Depurar Establecimiento de Túnel SSH
+  hosts: windows_server_via_jump
   gather_facts: false
+  vars:
+    _local_tunnel_port_for_playbook: 59850
+    _target_actual_ip_playbook: "10.72.1.167"
+    _target_actual_winrm_port_playbook: 5985
+    _jumphost_user_playbook: "cg4jpat1"
+    _jumphost_ip_playbook: "10.72.3.245"
 
   pre_tasks:
-    - name: Establecer túnel SSH (Local Port Forwarding para WinRM HTTP - hardcodeado)
+    - name: Mostrar parámetros de túnel que se usarán
+      ansible.builtin.debug:
+        msg: "TUNNEL DEBUG: LocalPort={{ _local_tunnel_port_for_playbook }}, TargetIP={{ _target_actual_ip_playbook }}, TargetPort={{ _target_actual_winrm_port_playbook }}, JumpUser={{ _jumphost_user_playbook }}, JumpIP={{ _jumphost_ip_playbook }}"
+      delegate_to: localhost
+      run_once: true
+
+    - name: Intentar establecer túnel SSH y capturar salida
       ansible.builtin.command: >
-        ssh -f -N -L 59850:10.72.1.167:5985
+        ssh -v -f -N -L {{ _local_tunnel_port_for_playbook }}:{{ _target_actual_ip_playbook }}:{{ _target_actual_winrm_port_playbook }}
         -o StrictHostKeyChecking=no
         -o UserKnownHostsFile=/dev/null
         -o ExitOnForwardFailure=yes
         -o ServerAliveInterval=60
-        cg4jpat1@10.72.3.245
+        -o ConnectTimeout=10
+        {{ _jumphost_user_playbook }}@{{ _jumphost_ip_playbook }}
       delegate_to: localhost
       changed_when: false
       run_once: true
-      register: tunnel_setup_status
-      failed_when: "tunnel_setup_status.rc != 0 and 'Address already in use' not in tunnel_setup_status.stderr and 'already forwarding port' not in tunnel_setup_status.stderr"
+      register: tunnel_setup_command_output
+      failed_when: false
 
-    - name: Esperar a que el puerto del túnel local 59850 esté activo (hardcodeado)
-      ansible.builtin.wait_for:
-        host: 127.0.0.1
-        port: 59850
-        timeout: 20
-        delay: 1
+    - name: Mostrar salida completa del comando SSH del túnel
+      ansible.builtin.debug:
+        var: tunnel_setup_command_output
+      delegate_to: localhost
+      run_once: true
+
+    - name: Esperar unos segundos para que el túnel (si tuvo éxito) se establezca
+      ansible.builtin.pause:
+        seconds: 5
+      delegate_to: localhost
+      run_once: true
+      when: tunnel_setup_command_output.rc == 0
+
+    - name: Verificar si el puerto local del túnel está escuchando
+      ansible.builtin.command: "ss -ltn src :{{ _local_tunnel_port_for_playbook }}"
+      delegate_to: localhost
+      changed_when: false
+      run_once: true
+      register: port_check_output
+      failed_when: false
+
+    - name: Mostrar salida de la verificación del puerto
+      ansible.builtin.debug:
+        var: port_check_output
       delegate_to: localhost
       run_once: true
 
   tasks:
-    - name: Mostrar variables de conexión efectivas
+    - name: Mostrar variables de conexión WinRM que Ansible USARÍA
       ansible.builtin.debug:
-        msg: "HOST: {{ inventory_hostname }}, ANSIBLE_HOST: {{ ansible_host }}, ANSIBLE_PORT: {{ ansible_port }}, ANSIBLE_USER: {{ ansible_user }}, WINRM_SCHEME: {{ ansible_winrm_scheme }}, WINRM_TRANSPORT: {{ ansible_winrm_transport }}"
+        msg: "WINRM DEBUG: HOST={{ inventory_hostname }}, ANSIBLE_HOST={{ ansible_host }}, ANSIBLE_PORT={{ ansible_port }}, ANSIBLE_USER={{ ansible_user }}, WINRM_SCHEME={{ ansible_winrm_scheme }}"
+      run_once: true
 
-    - name: Verificar conexión WinRM con win_ping
-      ansible.windows.win_ping:
+    - name: Tarea placeholder (no se ejecutará si hay fallo de conexión antes)
+      ansible.builtin.debug:
+        msg: "Si llegamos aquí y el túnel está arriba (verificar logs anteriores), el problema de conexión WinRM es por cómo Ansible usa ansible_port."
+      run_once: true
 
   post_tasks:
-    - name: Terminar túnel SSH (hardcodeado)
-      ansible.builtin.command: >
-        pkill -f "ssh -f -N -L 59850:10.72.1.167:5985.*cg4jpat1@10.72.3.245"
+    - name: Intentar terminar cualquier proceso de túnel (mejorado)
+      ansible.builtin.shell: |
+        PID_TO_KILL=$(ps aux | grep "ssh -v -f -N -L {{ _local_tunnel_port_for_playbook }}:{{ _target_actual_ip_playbook }}:{{ _target_actual_winrm_port_playbook }}" | grep "{{ _jumphost_user_playbook }}@{{ _jumphost_ip_playbook }}" | grep -v grep | awk '{print $2}')
+        if [ -n "$PID_TO_KILL" ]; then
+          kill $PID_TO_KILL && echo "Killed tunnel process $PID_TO_KILL"
+        else
+          echo "No tunnel process found to kill for port {{ _local_tunnel_port_for_playbook }}."
+        fi
       delegate_to: localhost
       changed_when: false
-      failed_when: false
-      # always_run: true
       run_once: true
+      args:
+        executable: /bin/bash
