@@ -9,7 +9,7 @@
       delegate_to: localhost
       run_once: true
 
-    - name: Intentar establecer túnel SSH y capturar salida DETALLADA
+    - name: Estableciendo túnel SSH
       ansible.builtin.command: >
         ssh -vvv -f -N -L {{ local_tunnel_port_for_ssh_command }}:{{ target_actual_ip }}:{{ target_actual_winrm_port }}
         -o StrictHostKeyChecking=no
@@ -21,36 +21,25 @@
       delegate_to: localhost
       changed_when: false
       run_once: true
-      register: tunnel_setup_command_output
+      register: tunnel_setup_status
       failed_when: false
 
     - name: Mostrar salida completa del comando SSH del túnel
       ansible.builtin.debug:
-        var: tunnel_setup_command_output
+        var: tunnel_setup_status
       delegate_to: localhost
       run_once: true
 
-    - name: Esperar unos segundos para que el túnel se establezca
-      ansible.builtin.pause:
-        seconds: 7
-      delegate_to: localhost
+    - name: Esperar a que el túnel se establezca y el puerto esté activo
+      ansible.builtin.wait_for:
+        host: 127.0.0.1 # localhost del EE de AWX
+        port: "{{ local_tunnel_port_for_ssh_command }}"
+        timeout: 20
+        delay: 2 # Damos un par de segundos de delay
+        state: started # Asegurarse que el puerto esté "escuchando"
+      delegate_to: localhost 
       run_once: true
-      when: tunnel_setup_command_output.rc == 0
-
-    - name: Verificar si el puerto local del túnel está escuchando
-      ansible.builtin.command: "netstat -ltn | grep LISTEN | grep :{{ local_tunnel_port_for_ssh_command }}" # Cambiado a netstat
-      delegate_to: localhost
-      changed_when: false
-      run_once: true
-      register: port_check_output
-      failed_when: false
-
-    - name: Mostrar salida de la verificación del puerto
-      ansible.builtin.debug:
-        var: port_check_output
-      delegate_to: localhost
-      run_once: true
-
+      when: tunnel_setup_status.rc == 0
   tasks:
     - name: Mostrar variables de conexión WinRM que Ansible USARÍA
       ansible.builtin.debug:
