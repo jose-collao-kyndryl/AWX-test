@@ -57,7 +57,7 @@
 
     - name: Copiar iam_extract.ps1 a C:\Kyndryl
       ansible.windows.win_copy:
-        src: "files/{{ item }}"
+        src: "../files/{{ item }}"
         dest: "C:\\Kyndryl\\{{ item }}"
       when: tunnel_setup_status.rc == 0
       loop:
