@@ -81,15 +81,11 @@
         - domain_role.stdout | int == 3
   post_tasks:
     - name: Intentar terminar cualquier proceso de túnel
-      ansible.builtin.shell: |
-        PID_TO_KILL=$(ps aux | grep "ssh -vvv -f -N -L {{ local_tunnel_port_for_ssh_command }}:{{ target_actual_ip }}:{{ target_actual_winrm_port }}" | grep "{{ jumphost_user }}@{{ jumphost_ip }}" | grep -v grep | awk '{print $2}')
-        if [ -n "$PID_TO_KILL" ]; then
-          kill $PID_TO_KILL && echo "Killed tunnel process $PID_TO_KILL for port {{ local_tunnel_port_for_ssh_command }}"
-        else
-          echo "No tunnel process found to kill for port {{ local_tunnel_port_for_ssh_command }}."
-        fi
+      ansible.builtin.command: >
+        pkill -f "ssh -vvv -f -N -L {{ local_tunnel_port_for_ssh_command }}:{{ target_actual_ip }}:{{ target_actual_winrm_port }}.*{{ jumphost_user }}@{{ jumphost_ip }}"
       delegate_to: localhost
       changed_when: no
       run_once: yes
+      always_run: true
       args:
         executable: /bin/bash
