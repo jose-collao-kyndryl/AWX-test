@@ -48,7 +48,7 @@
 
     - name: Intentar un win_ping si todo lo anterior parece bien
       ansible.windows.win_ping:
-      when: tunnel_setup_command_output.rc == 0
+      when: tunnel_setup_status.rc == 0
     - name: Asegurar que la carpeta C:\Kyndryl existe
       ansible.windows.win_file:
         path: C:\Kyndryl
