@@ -60,7 +60,20 @@
     - name: Intentar un win_ping si todo lo anterior parece bien
       ansible.windows.win_ping:
       when: tunnel_setup_command_output.rc == 0
+    - name: Asegurar que la carpeta C:\Kyndryl existe
+      ansible.windows.win_file:
+        path: C:\Kyndryl
+        state: directory
+      when: tunnel_setup_status.rc == 0
 
+    - name: Copiar iam_extract.ps1 a C:\Kyndryl
+      ansible.windows.win_copy:
+        src: "files/{{ item }}"
+        dest: "C:\Kyndryl\{{ item }}"
+      when: tunnel_setup_status.rc == 0
+      loop:
+      - iam_extract.ps1
+      - Get-LocalGroupMembership.ps1
   post_tasks:
     - name: Intentar terminar cualquier proceso de túnel
       ansible.builtin.shell: |
