@@ -94,7 +94,18 @@
         mode: '0755'
       delegate_to: localhost
       run_once: true
+    - name: Traer archivo .mef3 desde Windows al EE de AWX
+      ansible.windows.win_fetch:
+        src: "{{ found_mef3_files.files[0].path }}"
+        dest: "{{ ee_temp_mef3_path }}/"
+        flat: yes
+      when: found_mef3_files.matched > 0
+      register: fetched_to_ee_result
 
+    - name: Mostrar resultado del fetch al EE (debug)
+      ansible.builtin.debug:
+        var: fetched_to_ee_result
+      when: fetched_to_ee_result.changed
   post_tasks:
     - name: Bloque para asegurar la terminación del túnel para {{ inventory_hostname }}
       delegate_to: localhost
