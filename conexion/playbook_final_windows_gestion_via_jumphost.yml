@@ -29,12 +29,11 @@
         delay: 2
         state: started
       delegate_to: localhost 
-      run_once: yes
       when: tunnel_setup_status.rc == 0
   tasks:
     - name: Intentar un win_ping en {{ inventory_hostname }}
       ansible.windows.win_ping:
-      when: tunnel_setup_command_output.rc == 0
+      when: tunnel_setup_status.rc == 0
       
     - name: Asegurar que la carpeta C:\Kyndryl existe
       ansible.windows.win_file:
