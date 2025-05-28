@@ -81,6 +81,19 @@
       ansible.builtin.debug:
         var: found_mef3_files.files[0].path # Mostrar la ruta del primer archivo encontrado
       when: found_mef3_files.matched > 0
+    - name: Definir ruta en el EE para el archivo .mef3
+      ansible.builtin.set_fact:
+        ee_temp_mef3_path: "/tmp/job_{{ lookup('env', 'AWX_JOB_ID') | default(inventory_hostname + '_unknown_job_id') }}_ee_artifacts"
+      delegate_to: localhost
+      run_once: true # Solo definir una vez por playbook si la ruta base es la misma
+
+    - name: Crear directorio temporal en el EE
+      ansible.builtin.file:
+        path: "{{ ee_temp_mef3_path }}"
+        state: directory
+        mode: '0755'
+      delegate_to: localhost
+      run_once: true
 
   post_tasks:
     - name: Bloque para asegurar la terminación del túnel para {{ inventory_hostname }}
