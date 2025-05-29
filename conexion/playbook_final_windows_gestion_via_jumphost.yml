@@ -115,7 +115,7 @@
         path: "{{ rhel_final_mef3_path }}" # Ruta en el servidor RHEL
         state: directory
         mode: '0755'
-      delegate_to: mi_servidor_rhel_awx
+      delegate_to: GROANSIBLE
     - name: Asegurar directorio de destino en el servidor RHEL
       ansible.builtin.file:
         path: "{{ rhel_final_mef3_path }}"
