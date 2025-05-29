@@ -95,7 +95,7 @@
       delegate_to: localhost
       run_once: true
     - name: Traer archivo .mef3 desde Windows al EE de AWX
-      ansible.windows.win_fetch:
+      ansible.windows.fetch:
         src: "{{ found_mef3_files.files[0].path }}"
         dest: "{{ ee_temp_mef3_path }}/"
         flat: yes
@@ -123,8 +123,7 @@
         mode: '0755'
       delegate_to: GROANSIBLE
     - name: Copiar archivo .mef3 desde el EE al servidor RHEL
-      ansible.posix.synchronize: # O podrías usar ansible.builtin.copy
-        mode: push
+      ansible.builtin.copy:
         src: "{{ ee_temp_mef3_path }}/{{ found_mef3_files.files[0].filename }}"
         dest: "{{ rhel_final_mef3_path }}"
       delegate_to: GROANSIBLE
