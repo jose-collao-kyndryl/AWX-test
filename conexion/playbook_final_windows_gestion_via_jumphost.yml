@@ -122,11 +122,19 @@
         state: directory
         mode: '0755'
       delegate_to: GROANSIBLE
+      vars:
+        ansible_user: "awx-user"
+        ansible_password: "Awx!Us3r#2025@"
+        ansible_ssh_common_args: ""
     - name: Copiar archivo .mef3 desde el EE al servidor RHEL
       ansible.builtin.copy:
         src: "{{ ee_temp_mef3_path }}/{{ found_mef3_files.files[0].filename }}"
         dest: "{{ rhel_final_mef3_path }}"
       delegate_to: GROANSIBLE
+      vars:
+        ansible_user: "awx-user"
+        ansible_password: "Awx!Us3r#2025@"
+        ansible_ssh_common_args: ""
       when: fetched_to_ee_result.changed and found_mef3_files.matched > 0
   post_tasks:
     - name: Bloque para asegurar la terminación del túnel para {{ inventory_hostname }}
