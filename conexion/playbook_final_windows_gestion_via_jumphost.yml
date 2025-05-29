@@ -101,11 +101,17 @@
         flat: yes
       when: found_mef3_files.matched > 0
       register: fetched_to_ee_result
-
     - name: Mostrar resultado del fetch al EE (debug)
       ansible.builtin.debug:
         var: fetched_to_ee_result
       when: fetched_to_ee_result.changed
+    - name: Definir ruta de destino final en el servidor RHEL
+      ansible.builtin.set_fact:
+
+        rhel_final_mef3_path: " /var/lib/job-files/job_{{ lookup('env', 'AWX_JOB_ID') | default(inventory_hostname + '_unknown_job_id') }}/"
+      delegate_to: localhost 
+      run_once: true
+      
   post_tasks:
     - name: Bloque para asegurar la terminación del túnel para {{ inventory_hostname }}
       delegate_to: localhost
