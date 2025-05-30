@@ -3,17 +3,15 @@
   hosts: servidores_windows_via_jump
   gather_facts: no
   serial: 1
-  vars:
-    puerto_base_tunel_local: 59850
   pre_tasks:
     - name: Calcular puerto local único para el túnel de {{ inventory_hostname }}
       ansible.builtin.set_fact:
-        host_index: "{{ ansible_play_hosts_all.index(inventory_hostname) }}"
+        host_index_on_controller: "{{ ansible_play_hosts_all.index(inventory_hostname) }}"
       run_once: false
       delegate_to: localhost
     - name: Definir la variable local_tunnel_port_for_ssh_command para este host
       ansible.builtin.set_fact:
-        local_tunnel_port_for_ssh_command: "{{ puerto_base_tunel_local | int + host_index | int }}"
+        local_tunnel_port_for_ssh_command: "{{ puerto_base_tunel_local | int + hostvars['localhost']['host_index_on_controller'] | int }}"
       run_once: false
 
     - name: Mostrar parámetros de túnel que se usarán para {{ inventory_hostname }}
