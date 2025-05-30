@@ -7,20 +7,42 @@
   tasks:
     - name: mostrando las variables id de workflow y job
       debug:
-       msg:
-          - "--------------------------------------------------------------------"
-          - "IDs para el JOB ACTUAL (esta plantilla específica):"
-          - "  1. Variable directa 'awx_job_id': '{{ awx_job_id }}'"
-          - "  2. Variable directa 'tower_job_id': '{{ tower_job_id }}'"
-          - "  3. Variable de entorno 'AWX_JOB_ID': '{{ AWX_JOB_ID }}'"
-          - "  4. Variable de entorno 'TOWER_JOB_ID': '{{ TOWER_JOB_ID }}'"
-          - "--------------------------------------------------------------------"
-          - "IDs para el WORKFLOW (si este job es parte de un workflow):"
-          - "  5. Variable directa 'awx_workflow_job_id': '{{ awx_workflow_job_id }}'"
-          - "  6. Variable directa 'tower_workflow_job_id': '{{ tower_workflow_job_id }}'"
-          - "  7. Variable de entorno 'AWX_WORKFLOW_JOB_ID': '{{ AWX_WORKFLOW_JOB_ID }}'"
-          - "  8. Variable de entorno 'TOWER_WORKFLOW_JOB_ID':  '{{ TOWER_WORKFLOW_JOB_ID }}'"
-          - "--------------------------------------------------------------------"
+       msg: "  1. Variable directa 'awx_job_id': '{{ awx_job_id }}'"
+      delegate_to: localhost
+      ignore_errors: yes
+    - name: mostrando las variables id de workflow y job
+      debug:
+       msg: "  2. Variable directa 'tower_job_id': '{{ tower_job_id }}'"
+      delegate_to: localhost
+      ignore_errors: yes
+    - name: mostrando las variables id de workflow y job
+      debug:
+       msg: "  3. Variable de entorno 'AWX_JOB_ID': '{{ AWX_JOB_ID }}'"
+      delegate_to: localhost
+      ignore_errors: yes
+    - name: mostrando las variables id de workflow y job
+      debug:
+       msg: "  4. Variable de entorno 'TOWER_JOB_ID': '{{ TOWER_JOB_ID }}'"
+      delegate_to: localhost
+      ignore_errors: yes
+    - name: mostrando las variables id de workflow y job
+      debug:
+       msg: "  5. Variable directa 'awx_workflow_job_id': '{{ awx_workflow_job_id }}'"
+      delegate_to: localhost
+      ignore_errors: yes
+    - name: mostrando las variables id de workflow y job
+      debug:
+       msg: "  6. Variable directa 'tower_workflow_job_id': '{{ tower_workflow_job_id }}'"
+      delegate_to: localhost
+      ignore_errors: yes
+    - name: mostrando las variables id de workflow y job
+      debug:
+       msg: "  7. Variable de entorno 'AWX_WORKFLOW_JOB_ID': '{{ AWX_WORKFLOW_JOB_ID }}'"
+      delegate_to: localhost
+      ignore_errors: yes
+    - name: mostrando las variables id de workflow y job
+      debug:
+       msg: "  8. Variable de entorno 'TOWER_WORKFLOW_JOB_ID':  '{{ TOWER_WORKFLOW_JOB_ID }}'"
       delegate_to: localhost
       ignore_errors: yes
     - name: "UNIX CHECKS: 1. Mostrar información de Python usada por Ansible"
