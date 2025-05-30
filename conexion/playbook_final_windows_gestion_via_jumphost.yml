@@ -11,7 +11,10 @@
         # Este fact se establece para el inventory_hostname actual (ej. alc_vpazrdc01)
         puerto_dinamico_tunel: "{{ puerto_base_tunel_local | int + ansible_play_hosts_all.index(inventory_hostname) | int }}"
       # NO se delega, es un fact para el host actual.
-
+    - name: "establecer el ansible_port {{ inventory_hostname }}"
+      ansible.builtin.set_fact:
+        # Este fact se establece para el inventory_hostname actual (ej. alc_vpazrdc01)
+        ansible_port: "{{ puerto_dinamico_tunel }}"
     - name: "TUNNEL: Mostrar parámetros para {{ inventory_hostname }}"
       ansible.builtin.debug:
         # 'puerto_dinamico_tunel' es ahora un fact del inventory_hostname
