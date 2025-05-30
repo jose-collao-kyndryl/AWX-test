@@ -45,6 +45,17 @@
        msg: "  8. Variable de entorno 'TOWER_WORKFLOW_JOB_ID':  '{{ TOWER_WORKFLOW_JOB_ID }}'"
       delegate_to: localhost
       ignore_errors: yes
+    - name: Definir IDs de Job y Workflow (debug)
+      ansible.builtin.set_fact:
+        current_id: {{ awx_job_id | default(tower_job_id | default(awx_workflow_job_id | default(tower_workflow_job_id | default('unknown_id'))))}}
+      delegate_to: localhost
+      run_once: true
+    - name: Mostrar IDs resueltos (debug)
+      ansible.builtin.debug:  
+        msg:
+        - "ID del actual: {{ current_id }}"
+      delegate_to: localhost
+      run_once: true   
     - name: "UNIX CHECKS: 1. Mostrar información de Python usada por Ansible"
       ansible.builtin.debug:
         msg:
