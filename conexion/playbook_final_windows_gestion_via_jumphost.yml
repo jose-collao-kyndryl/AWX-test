@@ -6,30 +6,41 @@
   vars:
     puerto_base_tunel_local: 59850
   pre_tasks:
-    - name: "CÁLCULO DE PUERTO: Definir 'host_calculated_tunnel_port' para {{ inventory_hostname }}"
+    - name: "CÁLCULO DE PUERTO: Definir 'puerto_dinamico_tunel' para {{ inventory_hostname }}"
       ansible.builtin.set_fact:
-        host_calculated_tunnel_port: "{{ puerto_base_tunel_local | int + ansible_play_hosts_all.index(inventory_hostname) | int }}"
+        # Este fact se establece para el inventory_hostname actual (ej. alc_vpazrdc01)
+        puerto_dinamico_tunel: "{{ puerto_base_tunel_local | int + ansible_play_hosts_all.index(inventory_hostname) | int }}"
+      # NO se delega, es un fact para el host actual.
+
     - name: "TUNNEL: Mostrar parámetros para {{ inventory_hostname }}"
       ansible.builtin.debug:
-        msg: "TUNNEL DEBUG para {{ inventory_hostname }}: LocalPort={{ host_calculated_tunnel_port }}, TargetIP={{ target_actual_ip }}, TargetPort={{ target_actual_winrm_port }}, JumpUser={{ jumphost_user }}, JumpIP={{ jumphost_ip }}"
-    - name: "TUNNEL: Estableciendo túnel SSH para {{ inventory_hostname }} en puerto {{ host_calculated_tunnel_port }}"
+        # 'puerto_dinamico_tunel' es ahora un fact del inventory_hostname
+        msg: "TUNNEL DEBUG para {{ inventory_hostname }}: LocalPort={{ puerto_dinamico_tunel }}, TargetIP={{ target_actual_ip }}, TargetPort={{ target_actual_winrm_port }}, JumpUser={{ jumphost_user }}, JumpIP={{ jumphost_ip }}"
+      # No se delega, muestra las variables del host actual.
+
+    - name: "TUNNEL: Estableciendo túnel SSH para {{ inventory_hostname }} en puerto {{ puerto_dinamico_tunel }}"
       ansible.builtin.command: >
-        ssh -vvv -f -N -L {{ host_calculated_tunnel_port }}:{{ target_actual_ip }}:{{ target_actual_winrm_port }}
+        ssh -f -N -L {{ puerto_dinamico_tunel }}:{{ target_actual_ip }}:{{ target_actual_winrm_port }}
         -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ExitOnForwardFailure=yes
         -o ServerAliveInterval=60 -o ConnectTimeout=15
         {{ jumphost_user }}@{{ jumphost_ip }}
       delegate_to: localhost
       changed_when: false
       register: tunnel_setup_status
-    - name: "TUNNEL: Esperar a que el túnel para {{ inventory_hostname }} esté activo en puerto {{ host_calculated_tunnel_port }}"
+      # Jinja2 evalúa {{ puerto_dinamico_tunel }}, {{ target_actual_ip }}, etc., en el contexto de
+      # 'inventory_hostname' ANTES de que la tarea y sus argumentos resueltos se envíen a 'localhost'.
+
+    - name: "TUNNEL: Esperar a que el túnel para {{ inventory_hostname }} esté activo en puerto {{ puerto_dinamico_tunel }}"
       ansible.builtin.wait_for:
-        host: 127.0.0.1
-        port: "{{ host_calculated_tunnel_port }}"
+        host: 127.0.0.1 # localhost del EE de AWX
+        port: "{{ puerto_dinamico_tunel }}" # Usa el puerto calculado del host actual
         timeout: 20
         delay: 2
         state: started
       delegate_to: localhost
       when: tunnel_setup_status.rc == 0
+
+  
   tasks:
     - name: Intentar un win_ping en {{ inventory_hostname }}
       ansible.windows.win_ping:
