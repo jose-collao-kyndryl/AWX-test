@@ -83,7 +83,7 @@
       when: found_mef3_files.matched > 0
     - name: Definir ruta en el EE para el archivo .mef3
       ansible.builtin.set_fact:
-        ee_temp_mef3_path: "/tmp/job_{{ lookup('env', 'AWX_JOB_ID') | default(inventory_hostname + '_unknown_job_id') }}_ee_artifacts"
+        ee_temp_mef3_path: "/tmp/job_{{ awx_job_id | default(inventory_hostname + '_unknown_job_id') }}_ee_artifacts"
       delegate_to: localhost
       run_once: true # Solo definir una vez por playbook si la ruta base es la misma
 
@@ -105,34 +105,11 @@
       ansible.builtin.debug:
         var: fetched_to_ee_result
       when: fetched_to_ee_result.changed
-    - name: Definir Job ID resuelto (AWX o Tower)
-      ansible.builtin.set_fact:
-        job_id_from_env_awx: "{{ lookup('env', 'AWX_JOB_ID') }}"
-        job_id_from_env_tower: "{{ lookup('env', 'TOWER_JOB_ID') }}"
-      delegate_to: localhost
-      run_once: true
-    - name: Mostrar Job IDs encontrados desde el entorno (debug)
-      ansible.builtin.debug:
-        msg:
-          - "Valor de lookup('env', 'AWX_JOB_ID'): '{{ job_id_from_env_awx }}'"
-          - "Valor de lookup('env', 'TOWER_JOB_ID'): '{{ job_id_from_env_tower }}'"
-      delegate_to: localhost
-      run_once: true  
-    - name: Determinar Job ID final para la ruta
-      ansible.builtin.set_fact:
-        job_id_for_path: "{{ job_id_from_env_awx | default(job_id_from_env_tower | default('ID_JOB_POR_DEFECTO', true), true) }}"
-      delegate_to: localhost
-      run_once: true
-    - name: Mostrar Job ID resuelto para la ruta (debug)
-      ansible.builtin.debug:
-        msg: "Job ID para la ruta: {{ job_id_for_path }}"
-      delegate_to: localhost
-      run_once: true
-    - name: Definir ruta de destino final en el servidor RHEL
-      ansible.builtin.set_fact:
-        rhel_final_mef3_path: "/var/lib/job-files/job_{{ awx_job_id | default('No definido') }}/"
-      delegate_to: localhost 
-      run_once: true
+#    - name: Definir ruta de destino final en el servidor RHEL
+#      ansible.builtin.set_fact:
+#        rhel_final_mef3_path: "/var/lib/job-files/{{ awx_job_id }}/"
+#      delegate_to: localhost 
+#      run_once: true
     - name: Asegurar directorio de destino en el servidor RHEL
       ansible.builtin.file:
         path: "{{ rhel_final_mef3_path }}"
