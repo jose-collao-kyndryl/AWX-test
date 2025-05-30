@@ -47,7 +47,7 @@
       ignore_errors: yes
     - name: Definir IDs de Job y Workflow (debug)
       ansible.builtin.set_fact:
-        current_id: "{{ awx_job_id | default(tower_job_id | default(awx_workflow_job_id | default(tower_workflow_job_id | default('unknown_id'))))}}"
+        current_id: "{{ awx_workflow_job_id | default(tower_workflow_job_id | default(awx_job_id | default(tower_job_id | default('unknown_id'))))}}"
       delegate_to: localhost
       run_once: true
     - name: Mostrar IDs resueltos (debug)
