@@ -1,6 +1,6 @@
 ---
 - name: Validar Prerrequisitos en Servidores Unix
-  hosts: servidores_unix
+  hosts: "{{ dispositivos_finales }}"
   gather_facts: false
   tasks:
     - name: "UNIX CHECKS: 1. Validar conectividad SSH y ejecución básica (hostname)"
