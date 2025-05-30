@@ -4,11 +4,22 @@
   gather_facts: no
   serial: 1
   pre_tasks:
-    - name: Mostrar parámetros de túnel que se usarán (desde inventario)
+    - name: Calcular puerto local único para el túnel de {{ inventory_hostname }}
+      ansible.builtin.set_fact:
+        host_index: "{{ ansible_play_hosts_all.index(inventory_hostname) }}"
+      run_once: false
+      delegate_to: localhost
+    - name: Definir la variable local_tunnel_port_for_ssh_command para este host
+      ansible.builtin.set_fact:
+        local_tunnel_port_for_ssh_command: "{{ puerto_base_tunel_local | int + host_index | int }}"
+      run_once: false
+
+    - name: Mostrar parámetros de túnel que se usarán para {{ inventory_hostname }}
       ansible.builtin.debug:
         msg: "TUNNEL DEBUG para {{ inventory_hostname }}: LocalPort={{ local_tunnel_port_for_ssh_command }}, TargetIP={{ target_actual_ip }}, TargetPort={{ target_actual_winrm_port }}, JumpUser={{ jumphost_user }}, JumpIP={{ jumphost_ip }}"
       delegate_to: localhost
-    - name: Estableciendo túnel SSH para {{ inventory_hostname }}
+
+    - name: Estableciendo túnel SSH para {{ inventory_hostname }} en puerto {{ local_tunnel_port_for_ssh_command }}
       ansible.builtin.command: >
         ssh -vvv -f -N -L {{ local_tunnel_port_for_ssh_command }}:{{ target_actual_ip }}:{{ target_actual_winrm_port }}
         -o StrictHostKeyChecking=no
@@ -18,17 +29,17 @@
         -o ConnectTimeout=15
         {{ jumphost_user }}@{{ jumphost_ip }}
       delegate_to: localhost
-      changed_when: no
+      changed_when: false
       register: tunnel_setup_status
 
-    - name: Esperar a que el túnel para {{ inventory_hostname }} esté activo
+    - name: Esperar a que el túnel para {{ inventory_hostname }} esté activo en puerto {{ local_tunnel_port_for_ssh_command }}
       ansible.builtin.wait_for:
-        host: 127.0.0.1 # localhost del EE de AWX
+        host: 127.0.0.1
         port: "{{ local_tunnel_port_for_ssh_command }}"
         timeout: 20
         delay: 2
         state: started
-      delegate_to: localhost 
+      delegate_to: localhost
       when: tunnel_setup_status.rc == 0
   tasks:
     - name: Intentar un win_ping en {{ inventory_hostname }}
