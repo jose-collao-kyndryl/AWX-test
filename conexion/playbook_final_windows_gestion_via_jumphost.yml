@@ -111,9 +111,16 @@
         job_id_from_env_tower: "{{ lookup('env', 'TOWER_JOB_ID') }}"
       delegate_to: localhost
       run_once: true
+    - name: Mostrar Job IDs encontrados desde el entorno (debug)
+      ansible.builtin.debug:
+        msg:
+          - "Valor de lookup('env', 'AWX_JOB_ID'): '{{ job_id_from_env_awx }}'"
+          - "Valor de lookup('env', 'TOWER_JOB_ID'): '{{ job_id_from_env_tower }}'"
+      delegate_to: localhost
+      run_once: true  
     - name: Determinar Job ID final para la ruta
       ansible.builtin.set_fact:
-        job_id_for_path: "{{ job_id_from_env_awx | default(job_id_from_env_tower | default('default_folder_name')) }}"
+        job_id_for_path: "{{ job_id_from_env_awx | default(job_id_from_env_tower | default('ID_JOB_POR_DEFECTO', true), true) }}"
       delegate_to: localhost
       run_once: true
     - name: Mostrar Job ID resuelto para la ruta (debug)
