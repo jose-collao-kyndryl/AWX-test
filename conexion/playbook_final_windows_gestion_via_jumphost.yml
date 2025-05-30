@@ -67,6 +67,8 @@
       when: tunnel_setup_status.rc == 0
     - name: Ejecutar iam_extract.ps1 si es Domain Controller
       ansible.windows.win_command: powershell -ExecutionPolicy Bypass -File C:\Kyndryl\iam_extract.ps1
+      become: yes
+      become_method: runas
       args:
         chdir: C:\Kyndryl
       when:
@@ -75,6 +77,8 @@
         - domain_role.stdout | int == 4 or domain_role.stdout | int == 5
     - name: Ejecutar iam_extract.ps1 con /L:Local si es servidor miembro
       ansible.windows.win_command: powershell -ExecutionPolicy Bypass -File C:\Kyndryl\iam_extract.ps1 /L:Local
+      become: yes
+      become_method: runas
       args:
         chdir: C:\Kyndryl
       when:
