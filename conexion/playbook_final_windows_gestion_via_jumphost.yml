@@ -6,24 +6,18 @@
   vars:
     puerto_base_tunel_local: 59850
   pre_tasks:
-    - name: Calcular puerto local único para el túnel de {{ inventory_hostname }}
+ - name: "CÁLCULO DE PUERTO: Calcular índice y puerto para {{ inventory_hostname }}"
       ansible.builtin.set_fact:
-        host_index_on_controller: "{{ ansible_play_hosts_all.index(inventory_hostname) }}"
-      run_once: false
-      delegate_to: localhost
-    - name: Definir la variable local_tunnel_port_for_ssh_command para este host
-      ansible.builtin.set_fact:
-        local_tunnel_port_for_ssh_command: "{{ puerto_base_tunel_local | int + hostvars['localhost']['host_index_on_controller'] | int }}"
-      run_once: false
-
-    - name: Mostrar parámetros de túnel que se usarán para {{ inventory_hostname }}
+        host_index_for_port_calc: "{{ ansible_play_hosts_all.index(inventory_hostname) }}"
+        calculated_local_tunnel_port: "{{ puerto_base_tunel_local | int + ansible_play_hosts_all.index(inventory_hostname) | int }}"
+    - name: "TUNNEL: Mostrar parámetros para {{ inventory_hostname }}"
       ansible.builtin.debug:
-        msg: "TUNNEL DEBUG para {{ inventory_hostname }}: LocalPort={{ local_tunnel_port_for_ssh_command }}, TargetIP={{ target_actual_ip }}, TargetPort={{ target_actual_winrm_port }}, JumpUser={{ jumphost_user }}, JumpIP={{ jumphost_ip }}"
+        msg: "TUNNEL DEBUG para {{ inventory_hostname }}: LocalPort={{ calculated_local_tunnel_port }}, TargetIP={{ target_actual_ip }}, TargetPort={{ target_actual_winrm_port }}, JumpUser={{ jumphost_user }}, JumpIP={{ jumphost_ip }}"
       delegate_to: localhost
 
     - name: Estableciendo túnel SSH para {{ inventory_hostname }} en puerto {{ local_tunnel_port_for_ssh_command }}
       ansible.builtin.command: >
-        ssh -vvv -f -N -L {{ local_tunnel_port_for_ssh_command }}:{{ target_actual_ip }}:{{ target_actual_winrm_port }}
+        ssh -vvv -f -N -L {{ calculated_local_tunnel_port }}:{{ target_actual_ip }}:{{ target_actual_winrm_port }}
         -o StrictHostKeyChecking=no
         -o UserKnownHostsFile=/dev/null
         -o ExitOnForwardFailure=yes
