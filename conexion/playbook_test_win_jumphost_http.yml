@@ -62,8 +62,8 @@
         - "ansible_job_id: {{ ansible_job_id | default('No definido') }}"
         - "awx_job_id (var): {{ awx_job_id | default('No definido') }}"
         - "tower_job_id (var): {{ tower_job_id | default('No definido') }}"
-  delegate_to: localhost
-  run_once: true
+      delegate_to: localhost
+      run_once: true
     - name: Intentar un win_ping si todo lo anterior parece bien
       ansible.windows.win_ping:
       when: tunnel_setup_command_output.rc == 0
