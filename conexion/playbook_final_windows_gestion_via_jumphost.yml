@@ -69,6 +69,7 @@
       ansible.windows.win_command: powershell -ExecutionPolicy Bypass -File C:\Kyndryl\iam_extract.ps1
       become: yes
       become_method: runas
+      become_user: Administrator
       args:
         chdir: C:\Kyndryl
       when:
@@ -79,6 +80,7 @@
       ansible.windows.win_command: powershell -ExecutionPolicy Bypass -File C:\Kyndryl\iam_extract.ps1 /L:Local
       become: yes
       become_method: runas
+      become_user: Administrator
       args:
         chdir: C:\Kyndryl
       when:
