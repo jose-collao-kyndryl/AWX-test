@@ -3,59 +3,7 @@
   hosts: "{{ dispositivos_finales }}"
   gather_facts: true
   become: false
-
   tasks:
-    - name: mostrando las variables id de workflow y job
-      debug:
-       msg: "  1. Variable directa 'awx_job_id': '{{ awx_job_id }}'"
-      delegate_to: localhost
-      ignore_errors: yes
-    - name: mostrando las variables id de workflow y job
-      debug:
-       msg: "  2. Variable directa 'tower_job_id': '{{ tower_job_id }}'"
-      delegate_to: localhost
-      ignore_errors: yes
-    - name: mostrando las variables id de workflow y job
-      debug:
-       msg: "  3. Variable de entorno 'AWX_JOB_ID': '{{ AWX_JOB_ID }}'"
-      delegate_to: localhost
-      ignore_errors: yes
-    - name: mostrando las variables id de workflow y job
-      debug:
-       msg: "  4. Variable de entorno 'TOWER_JOB_ID': '{{ TOWER_JOB_ID }}'"
-      delegate_to: localhost
-      ignore_errors: yes
-    - name: mostrando las variables id de workflow y job
-      debug:
-       msg: "  5. Variable directa 'awx_workflow_job_id': '{{ awx_workflow_job_id }}'"
-      delegate_to: localhost
-      ignore_errors: yes
-    - name: mostrando las variables id de workflow y job
-      debug:
-       msg: "  6. Variable directa 'tower_workflow_job_id': '{{ tower_workflow_job_id }}'"
-      delegate_to: localhost
-      ignore_errors: yes
-    - name: mostrando las variables id de workflow y job
-      debug:
-       msg: "  7. Variable de entorno 'AWX_WORKFLOW_JOB_ID': '{{ AWX_WORKFLOW_JOB_ID }}'"
-      delegate_to: localhost
-      ignore_errors: yes
-    - name: mostrando las variables id de workflow y job
-      debug:
-       msg: "  8. Variable de entorno 'TOWER_WORKFLOW_JOB_ID':  '{{ TOWER_WORKFLOW_JOB_ID }}'"
-      delegate_to: localhost
-      ignore_errors: yes
-    - name: Definir IDs de Job y Workflow (debug)
-      ansible.builtin.set_fact:
-        current_id: "{{ awx_workflow_job_id | default(tower_workflow_job_id | default(awx_job_id | default(tower_job_id | default('unknown_id'))))}}"
-      delegate_to: localhost
-      run_once: true
-    - name: Mostrar IDs resueltos (debug)
-      ansible.builtin.debug:  
-        msg:
-        - "ID del actual: {{ current_id }}"
-      delegate_to: localhost
-      run_once: true   
     - name: "UNIX CHECKS: 1. Mostrar información de Python usada por Ansible"
       ansible.builtin.debug:
         msg:
