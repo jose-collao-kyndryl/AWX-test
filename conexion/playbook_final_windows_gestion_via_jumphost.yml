@@ -144,10 +144,10 @@
       block:
         - name: Debug - Entrando limpieza para {{ inventory_hostname }}
           ansible.builtin.debug:
-            msg: "Limpiando túnel para LocalPort={{ local_tunnel_port_for_ssh_command }} -> TargetIP={{ target_actual_ip }}"
+            msg: "Limpiando túnel para LocalPort={{ puerto_dinamico_tunel}} -> TargetIP={{ target_actual_ip }}"
       always:
         - name: Intentar terminar túnel SSH específico para {{ inventory_hostname }}
           ansible.builtin.command: >
-            pkill -f "ssh .* -L {{ local_tunnel_port_for_ssh_command }}:{{ target_actual_ip }}:{{ target_actual_winrm_port }}.*{{ jumphost_user }}@{{ jumphost_ip }}"
+            pkill -f "ssh .* -L {{ puerto_dinamico_tunel}}:{{ target_actual_ip }}:{{ target_actual_winrm_port }}.*{{ jumphost_user }}@{{ jumphost_ip }}"
           changed_when: false
           failed_when: false
