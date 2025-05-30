@@ -56,7 +56,14 @@
       ansible.builtin.debug:
         msg: "WINRM DEBUG: HOST={{ inventory_hostname }}, ANSIBLE_HOST={{ ansible_host }}, ANSIBLE_PORT={{ ansible_port }}, ANSIBLE_USER={{ ansible_user }}, WINRM_SCHEME={{ ansible_winrm_scheme }}, TRANSPORT={{ ansible_winrm_transport }}"
       run_once: true
-
+    - name: Mostrar variables de Ansible relacionadas con el job (debug)
+      ansible.builtin.debug:
+        msg:
+        - "ansible_job_id: {{ ansible_job_id | default('No definido') }}"
+        - "awx_job_id (var): {{ awx_job_id | default('No definido') }}"
+        - "tower_job_id (var): {{ tower_job_id | default('No definido') }}"
+  delegate_to: localhost
+  run_once: true
     - name: Intentar un win_ping si todo lo anterior parece bien
       ansible.windows.win_ping:
       when: tunnel_setup_command_output.rc == 0
