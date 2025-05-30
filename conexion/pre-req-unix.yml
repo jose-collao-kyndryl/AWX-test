@@ -22,7 +22,7 @@
           - "  8. Variable de entorno 'TOWER_WORKFLOW_JOB_ID':  '{{ TOWER_WORKFLOW_JOB_ID }}'"
           - "--------------------------------------------------------------------"
       delegate_to: localhost
-      ignore_error: yes
+      ignore_errors: yes
     - name: "UNIX CHECKS: 1. Mostrar información de Python usada por Ansible"
       ansible.builtin.debug:
         msg:
