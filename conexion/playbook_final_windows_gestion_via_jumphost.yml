@@ -81,6 +81,11 @@
       ansible.builtin.debug:
         var: found_mef3_files.files[0].path
       when: found_mef3_files.matched > 0
+    - name: Definir IDs de Job o Workflow
+      ansible.builtin.set_fact:
+        current_id: "{{ awx_workflow_job_id | default(tower_workflow_job_id | default(awx_job_id | default(tower_job_id | default('unknown_id'))))}}"
+      delegate_to: localhost
+      run_once: true
     - name: Crear directorio temporal en el EE
       ansible.builtin.file:
         path: "{{ ruta_ee_temporal }}"
@@ -99,11 +104,7 @@
       ansible.builtin.debug:
         var: fetched_to_ee_result
       when: fetched_to_ee_result.changed
-    - name: Definir IDs de Job o Workflow
-      ansible.builtin.set_fact:
-        current_id: "{{ awx_workflow_job_id | default(tower_workflow_job_id | default(awx_job_id | default(tower_job_id | default('unknown_id'))))}}"
-      delegate_to: localhost
-      run_once: true
+
     - name: Asegurar directorio de destino en el servidor RHEL
       ansible.builtin.file:
         path: "{{ rhel_final_mef3_path }}"
