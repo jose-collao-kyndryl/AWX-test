@@ -1,6 +1,6 @@
 ---
 - name: Depurar Establecimiento de Túnel SSH
-  hosts: windows_server_via_jump
+  hosts: servidores_windows_via_jump
   gather_facts: false
   pre_tasks:
     - name: Mostrar parámetros de túnel que se usarán (desde inventario)
