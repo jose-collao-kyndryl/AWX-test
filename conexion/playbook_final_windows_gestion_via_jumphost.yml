@@ -107,12 +107,18 @@
       when: fetched_to_ee_result.changed
     - name: Definir Job ID resuelto (AWX o Tower)
       ansible.builtin.set_fact:
-        job_id_for_path: "{{ lookup('env', 'AWX_JOB_ID') | default(lookup('env', 'TOWER_JOB_ID') | default('manual_run_or_unknown_id')) }}"
+        job_id_from_env_awx: "{{ lookup('env', 'AWX_JOB_ID') }}"
+        job_id_from_env_tower: "{{ lookup('env', 'TOWER_JOB_ID') }}"
+      delegate_to: localhost
+      run_once: true
+    - name: Determinar Job ID final para la ruta
+      ansible.builtin.set_fact:
+        job_id_for_path: "{{ job_id_from_env_awx | default(job_id_from_env_tower | default('default_folder_name')) }}"
       delegate_to: localhost
       run_once: true
     - name: Mostrar Job ID resuelto para la ruta (debug)
       ansible.builtin.debug:
-        var: job_id_for_path
+        msg: "Job ID para la ruta: {{ job_id_for_path }}"
       delegate_to: localhost
       run_once: true
     - name: Definir ruta de destino final en el servidor RHEL
