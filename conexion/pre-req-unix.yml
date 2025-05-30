@@ -1,0 +1,43 @@
+---
+- name: Validar Prerrequisitos en Servidores Unix
+  hosts: servidores_unix
+  gather_facts: false
+  tasks:
+    - name: "UNIX CHECKS: 1. Validar conectividad SSH y ejecución básica (hostname)"
+      ansible.builtin.command: hostname
+      register: unix_hostname_output
+      changed_when: false
+      failed_when: unix_hostname_output.rc != 0
+
+    - name: "UNIX CHECKS: Resultado de hostname"
+      ansible.builtin.debug:
+        msg: "Hostname en {{ inventory_hostname }}: {{ unix_hostname_output.stdout }}. Conexión SSH al puerto {{ ansible_port | default(22) }} OK."
+
+    - name: "UNIX CHECKS: 2. Verificar instalación de Perl"
+      ansible.builtin.command: perl -v
+      register: perl_check_output
+      ignore_errors: true
+      changed_when: false
+
+    - name: "UNIX CHECKS: Resultado de Perl"
+      ansible.builtin.debug:
+        msg: |
+          Host: {{ inventory_hostname }}
+          Perl Encontrado: {{ 'Sí' if perl_check_output.rc == 0 else 'No (o error al ejecutar perl -v)' }}
+          Salida (stderr usualmente): {{ perl_check_output.stderr if perl_check_output.stderr else perl_check_output.stdout }}
+          RC: {{ perl_check_output.rc }}
+
+    - name: "UNIX CHECKS: 3. Verificar explícitamente python3 (si es un requisito específico)"
+      ansible.builtin.raw: python3 -V # -V (mayúscula) para versión en Python
+      register: python3_check_output
+      ignore_errors: true
+      changed_when: false
+
+    - name: "UNIX CHECKS: Resultado de Python 3"
+      ansible.builtin.debug:
+        msg: |
+          Host: {{ inventory_hostname }}
+          Python 3 Encontrado: {{ 'Sí' if python3_check_output.rc == 0 else 'No (o error al ejecutar python3 -V)' }}
+          Versión (stdout o stderr): {{ python3_check_output.stdout if python3_check_output.stdout else python3_check_output.stderr }}
+          RC: {{ python3_check_output.rc }}
+          Nota: Ansible ya requiere un intérprete de Python para la mayoría de los módulos. Esta es una verificación explícita de 'python3'.
