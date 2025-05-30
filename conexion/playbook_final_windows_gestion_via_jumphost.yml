@@ -6,7 +6,7 @@
   vars:
     puerto_base_tunel_local: 59850
   pre_tasks:
- - name: "CÁLCULO DE PUERTO: Calcular índice y puerto para {{ inventory_hostname }}"
+    - name: "CÁLCULO DE PUERTO: Calcular índice y puerto para {{ inventory_hostname }}"
       ansible.builtin.set_fact:
         host_index_for_port_calc: "{{ ansible_play_hosts_all.index(inventory_hostname) }}"
         calculated_local_tunnel_port: "{{ puerto_base_tunel_local | int + ansible_play_hosts_all.index(inventory_hostname) | int }}"
