@@ -8,23 +8,23 @@
   pre_tasks:
     - name: "CÁLCULO DE PUERTO: Definir puerto de túnel para {{ inventory_hostname }}"
       ansible.builtin.set_fact:
-        calculated_tunnel_port: "{{ puerto_base_tunel_local | int + ansible_play_hosts_all.index(inventory_hostname) | int }}"
+        local_tunnel_port_for_ssh_command: "{{ puerto_base_tunel_local | int + ansible_play_hosts_all.index(inventory_hostname) | int }}"
     - name: "TUNNEL: Mostrar parámetros para {{ inventory_hostname }}"
       ansible.builtin.debug:
-        msg: "TUNNEL DEBUG para {{ inventory_hostname }}: LocalPort={{ calculated_tunnel_port }}, TargetIP={{ target_actual_ip }}, TargetPort={{ target_actual_winrm_port }}, JumpUser={{ jumphost_user }}, JumpIP={{ jumphost_ip }}"
-    - name: "TUNNEL: Estableciendo túnel SSH para {{ inventory_hostname }} en puerto {{ calculated_tunnel_port }}"
+        msg: "TUNNEL DEBUG para {{ inventory_hostname }}: LocalPort={{ local_tunnel_port_for_ssh_command }}, TargetIP={{ target_actual_ip }}, TargetPort={{ target_actual_winrm_port }}, JumpUser={{ jumphost_user }}, JumpIP={{ jumphost_ip }}"
+    - name: "TUNNEL: Estableciendo túnel SSH para {{ inventory_hostname }} en puerto {{ local_tunnel_port_for_ssh_command }}"
       ansible.builtin.command: >
-        ssh -vvv -f -N -L {{ calculated_tunnel_port }}:{{ target_actual_ip }}:{{ target_actual_winrm_port }}
+        ssh -vvv -f -N -L {{ local_tunnel_port_for_ssh_command }}:{{ target_actual_ip }}:{{ target_actual_winrm_port }}
         -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ExitOnForwardFailure=yes
         -o ServerAliveInterval=60 -o ConnectTimeout=15
         {{ jumphost_user }}@{{ jumphost_ip }}
       delegate_to: localhost
       changed_when: false
       register: tunnel_setup_status
-    - name: "TUNNEL: Esperar a que el túnel para {{ inventory_hostname }} esté activo en puerto {{ calculated_tunnel_port }}"
+    - name: "TUNNEL: Esperar a que el túnel para {{ inventory_hostname }} esté activo en puerto {{ local_tunnel_port_for_ssh_command }}"
       ansible.builtin.wait_for:
         host: 127.0.0.1
-        port: "{{ calculated_tunnel_port }}"
+        port: "{{ local_tunnel_port_for_ssh_command }}"
         timeout: 20
         delay: 2
         state: started
