@@ -3,6 +3,8 @@
   hosts: servidores_windows_via_jump
   gather_facts: no
   serial: 1
+  vars:
+    puerto_base_tunel_local: 59850
   pre_tasks:
     - name: Calcular puerto local único para el túnel de {{ inventory_hostname }}
       ansible.builtin.set_fact:
