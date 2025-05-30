@@ -130,7 +130,7 @@
       run_once: true
     - name: Definir ruta de destino final en el servidor RHEL
       ansible.builtin.set_fact:
-        rhel_final_mef3_path: "/var/lib/job-files/job_{{ job_id_for_path }}/"
+        rhel_final_mef3_path: "/var/lib/job-files/job_{{ awx_job_id | default('No definido') }}"/"
       delegate_to: localhost 
       run_once: true
     - name: Asegurar directorio de destino en el servidor RHEL
