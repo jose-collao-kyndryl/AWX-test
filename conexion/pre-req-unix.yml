@@ -9,7 +9,7 @@
       ansible.builtin.debug:
         msg:
           - "Host: {{ inventory_hostname }}"
-          - "Ansible está usando Python en: {{ ansible_python_interpreter | default('No detectado') }}"
+          - "Ansible está usando Python en: {{ ansible_python_interpreter | default(ansible_python.executable, true) | default('No detectado', true) }}"
           - "Versión de Python usada por Ansible: {{ ansible_python_version | default('No detectada') }}"
           - "Detalles de ansible_python: {{ ansible_python | default('No detectado') }}"
     - name: "UNIX CHECKS: 2. Validar conectividad SSH y ejecución básica (hostname)"
@@ -30,5 +30,5 @@
         msg: |
           Host: {{ inventory_hostname }}
           Perl Encontrado: {{ 'Sí' if perl_check_output.rc == 0 else 'No (o error al ejecutar perl -v)' }}
-          Salida (stderr usualmente): {{ perl_check_output.stderr if perl_check_output.stderr else perl_check_output.stdout }}
+          Salida: {{ perl_check_output.stderr if perl_check_output.stderr else perl_check_output.stdout }}
           RC: {{ perl_check_output.rc }}
