@@ -47,16 +47,16 @@
       ansible.windows.win_ping:
       when: tunnel_setup_status.rc == 0
       
-    - name: Asegurar que la carpeta C:\Kyndryl existe
+    - name: "Asegurar que la carpeta {{ ruta_win_base }} existe"
       ansible.windows.win_file:
-        path: C:\Kyndryl
+        path: "{{ ruta_win_base }}"
         state: directory
       when: tunnel_setup_status.rc == 0
 
-    - name: Copiar iam_extract.ps1 a C:\Kyndryl
+    - name: "Copiar iam_extract.ps1 a {{ ruta_win_base }}"
       ansible.windows.win_copy:
         src: "../files/{{ item }}"
-        dest: "C:/Kyndryl/{{ item }}"
+        dest: "{{ ruta_win_base }}/{{ item }}"
       when: tunnel_setup_status.rc == 0
       loop: "{{ ejecutables_windows }}"
     - name: Detectar si es Domain Controller
@@ -64,24 +64,24 @@
       register: domain_role
       when: tunnel_setup_status.rc == 0
     - name: Ejecutar iam_extract.ps1 si es Domain Controller
-      ansible.windows.win_command: powershell -ExecutionPolicy Bypass -File C:\Kyndryl\iam_extract.ps1
+      ansible.windows.win_command: powershell -ExecutionPolicy Bypass -File .\iam_extract.ps1
       args:
-        chdir: C:\Kyndryl
+        chdir: "{{ ruta_win_base }}"
       when:
         - tunnel_setup_status.rc == 0
         - domain_role.stdout is defined
         - domain_role.stdout | int == 4 or domain_role.stdout | int == 5
     - name: Ejecutar iam_extract.ps1 con /L:Local si es servidor miembro
-      ansible.windows.win_command: powershell -ExecutionPolicy Bypass -File C:\Kyndryl\iam_extract.ps1 -L Local
+      ansible.windows.win_command: powershell -ExecutionPolicy Bypass -File .\iam_extract.ps1 -L Local
       args:
-        chdir: C:\Kyndryl
+        chdir: "{{ ruta_win_base }}"
       when:
         - tunnel_setup_status.rc == 0
         - domain_role.stdout is defined
         - domain_role.stdout | int == 3
-    - name: Encontrar el archivo .mef3 generado en C:\Kyndryl
+    - name: "Encontrar el archivo .mef3 generado en {{ ruta_win_base }}"
       ansible.windows.win_find:
-        paths: C:\Kyndryl
+        paths: "{{ ruta_win_base }}"
         patterns: "*.mef3"
         use_regex: false
         age: "-5m"
