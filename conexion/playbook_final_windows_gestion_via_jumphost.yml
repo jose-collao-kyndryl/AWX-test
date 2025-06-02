@@ -116,13 +116,6 @@
       ansible.builtin.debug:
         var: fetched_to_ee_result
       when: fetched_to_ee_result.changed
-
-    - name: Asegurar directorio de destino en el servidor RHEL
-      ansible.builtin.file:
-        path: "{{ rhel_final_mef3_path }}"
-        state: directory
-        mode: '0755'
-      delegate_to: GROANSIBLE
     - name: Asegurar directorio de destino en el servidor RHEL
       ansible.builtin.file:
         path: "{{ rhel_final_mef3_path }}"
