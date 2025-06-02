@@ -77,10 +77,10 @@
         - domain_role.stdout is defined
         - domain_role.stdout | int == 4 or domain_role.stdout | int == 5
     - name: Ejecutar iam_extract.ps1 con /L:Local si es servidor miembro
-      ansible.windows.win_command: powershell -ExecutionPolicy Bypass -File C:\Kyndryl\iam_extract.ps1 /L:Local
-      become: yes
-      become_method: runas
-      become_user: Administrator
+      ansible.windows.win_command: powershell -ExecutionPolicy Bypass -File C:\Kyndryl\iam_extract.ps1 -L Local
+#      become: yes
+#      become_method: runas
+#      become_user: Administrator
       args:
         chdir: C:\Kyndryl
       when:
