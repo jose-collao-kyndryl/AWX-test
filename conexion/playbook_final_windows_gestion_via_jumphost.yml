@@ -30,13 +30,11 @@
       delegate_to: localhost
       changed_when: false
       register: tunnel_setup_status
-      # Jinja2 evalúa {{ puerto_dinamico_tunel }}, {{ target_actual_ip }}, etc., en el contexto de
-      # 'inventory_hostname' ANTES de que la tarea y sus argumentos resueltos se envíen a 'localhost'.
 
     - name: "TUNNEL: Esperar a que el túnel para {{ inventory_hostname }} esté activo en puerto {{ puerto_dinamico_tunel }}"
       ansible.builtin.wait_for:
-        host: 127.0.0.1 # localhost del EE de AWX
-        port: "{{ puerto_dinamico_tunel }}" # Usa el puerto calculado del host actual
+        host: 127.0.0.1
+        port: "{{ puerto_dinamico_tunel }}"
         timeout: 20
         delay: 2
         state: started
@@ -68,8 +66,8 @@
     - name: Ejecutar iam_extract.ps1 si es Domain Controller
       ansible.windows.win_command: powershell -ExecutionPolicy Bypass -File C:\Kyndryl\iam_extract.ps1
       become: yes
-      become_method: runas
-      become_user: Administrator
+#      become_method: runas
+#      become_user: Administrator
       args:
         chdir: C:\Kyndryl
       when:
