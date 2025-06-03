@@ -129,6 +129,16 @@
         mode: '0644'
       delegate_to: GROANSIBLE
       when: fetched_to_ee_result.changed and found_mef3_files.matched > 0
+    - name: Eliminar carpeta {{ ruta_win_base }} y su contenido (para limpieza)
+      ansible.windows.win_file:
+        path: "{{ ruta_win_base }}"
+        state: absent
+      when: tunnel_setup_status.rc == 0 and fetched_to_ee_result.changed and found_mef3_files.matched > 0
+    - name: Recrear carpeta {{ ruta_win_base }} vacía (para la próxima ejecución)
+      ansible.windows.win_file:
+        path: "{{ ruta_win_base }}"
+        state: directory
+      when: tunnel_setup_status.rc == 0 and fetched_to_ee_result.changed and found_mef3_files.matched > 0
   post_tasks:
     - name: Bloque para asegurar la terminación del túnel para {{ inventory_hostname }}
       delegate_to: localhost
