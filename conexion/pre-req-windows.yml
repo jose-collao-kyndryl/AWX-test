@@ -17,7 +17,7 @@
         msg: "TUNNEL DEBUG para {{ inventory_hostname }}: LocalPort={{ puerto_dinamico_tunel }}, TargetIP={{ target_actual_ip }}, TargetPort={{ target_actual_winrm_port }}, JumpUser={{ jumphost_user }}, JumpIP={{ jumphost_ip }}"
     
 ##########################
-- name: "TUNNEL: Estableciendo túnel SSH para {{ inventory_hostname }} en puerto {{ puerto_dinamico_tunel }}"
+    - name: "TUNNEL: Estableciendo túnel SSH para {{ inventory_hostname }} en puerto {{ puerto_dinamico_tunel }}"
       ansible.builtin.command: >- # <-- El guion al final ayuda con la legibilidad del YAML
         sshpass -p '{{ ansible_ssh_pass }}'
         ssh -f -N -L {{ puerto_dinamico_tunel }}:{{ target_actual_ip }}:{{ target_actual_winrm_port }}
