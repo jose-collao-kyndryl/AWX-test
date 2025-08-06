@@ -20,40 +20,35 @@
     - name: "TUNNEL: Estableciendo túnel SSH para {{ inventory_hostname }} en puerto {{ puerto_dinamico_tunel }}"
       ansible.builtin.shell:
         cmd: |
-          set -e
-          # Crear un script temporal para que actúe como nuestro 'proveedor de passphrase'
-          SSH_ASKPASS_SCRIPT=$(mktemp /tmp/ssh_askpass_XXXXXX)
-          chmod +x "$SSH_ASKPASS_SCRIPT"
-          # Llenar el script con un comando que imprima la passphrase
-          echo "echo '{{ ansible_ssh_pass }}'" > "$SSH_ASKPASS_SCRIPT"
-
-          # Iniciar el agente SSH
+          # Iniciar el agente SSH y exportar sus variables
           eval $(ssh-agent -s)
-
-          # Usar SSH_ASKPASS para añadir la llave al agente de forma no interactiva
-          # 'setsid' asegura que ssh-add se ejecute en un nuevo contexto sin terminal
-          DISPLAY=:0 setsid ssh-add {{ jumphost_ssh_key_file }} < /dev/null
-
-          # Limpiar el script temporal tan pronto como sea posible
-          rm -f "$SSH_ASKPASS_SCRIPT"
+          
+          # Crear un script temporal para que actúe como nuestro 'proveedor de passphrase'
+          ASKPASS_SCRIPT=$(mktemp /tmp/askpass_XXXXXX)
+          chmod u+x "$ASKPASS_SCRIPT"
+          echo "echo '{{ ansible_ssh_pass }}'" > "$ASKPASS_SCRIPT"
+          
+          # Añadir la llave al agente usando el script como proveedor de la passphrase
+          # La variable DISPLAY es necesaria para que ssh-add invoque a SSH_ASKPASS
+          DISPLAY=:0 SSH_ASKPASS="$ASKPASS_SCRIPT" ssh-add {{ jumphost_ssh_key_file }} < /dev/null
+          
+          # Limpiar el script temporal tan pronto como ya no se necesite
+          rm -f "$ASKPASS_SCRIPT"
           
           # Ejecutar el comando del túnel (ahora usará la llave del agente)
+          # Ya no es necesario el flag -i, el agente provee la identidad
           ssh -f -N -L {{ puerto_dinamico_tunel }}:{{ target_actual_ip }}:{{ target_actual_winrm_port }} \
               -o BatchMode=yes \
               -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ExitOnForwardFailure=yes \
               -o ServerAliveInterval=60 -o ConnectTimeout=15 \
               {{ jumphost_user }}@{{ jumphost_ip }}
           
-          # Detener el agente SSH
-          ssh-agent -k
+          # Detener el agente SSH. La variable del PID del agente fue exportada por el comando 'eval'
+          kill "$SSH_AGENT_PID"
         executable: /bin/bash
       delegate_to: localhost
       changed_when: false
       register: tunnel_setup_status
-      # Exportamos la variable de entorno SSH_ASKPASS para que ssh-add la use
-      environment:
-        SSH_ASKPASS: "{{ SSH_ASKPASS_SCRIPT }}"
-  #    no_log: true 
 ##########################
 #    - name: "TUNNEL: Estableciendo túnel SSH para {{ inventory_hostname }} en puerto {{ puerto_dinamico_tunel }}"
 #      ansible.builtin.command: >
