@@ -95,6 +95,6 @@
       always:
         - name: Intentar terminar túnel SSH específico para {{ inventory_hostname }}
           ansible.builtin.command: >
-            pkill -f "ssh .* -L {{ puerto_dinamico_tunel}}:{{ target_actual_ip }}:{{ target_actual_winrm_port }}.*{{ jumphost_user }}@{{ jumphost_ip }}"
+            kill -f "ssh .* -L {{ puerto_dinamico_tunel}}:{{ target_actual_ip }}:{{ target_actual_winrm_port }}.*{{ jumphost_user }}@{{ jumphost_ip }}"
           changed_when: false
           failed_when: false
