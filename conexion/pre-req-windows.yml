@@ -27,10 +27,10 @@
         -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ExitOnForwardFailure=yes
         -o ServerAliveInterval=60 -o ConnectTimeout=15
         {{ jumphost_user }}@{{ jumphost_ip }}
-        -vvv
       delegate_to: localhost
       changed_when: false
       register: tunnel_setup_status
+      no_log: true
 
 ######    
 #    - name: "TUNNEL: Estableciendo túnel SSH para {{ inventory_hostname }} en puerto {{ puerto_dinamico_tunel }}"
