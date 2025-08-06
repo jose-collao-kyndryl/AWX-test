@@ -29,7 +29,7 @@
       delegate_to: localhost
       changed_when: false
       register: tunnel_setup_status
-      no_log: true 
+  #    no_log: true 
 ##########################
 #    - name: "TUNNEL: Estableciendo túnel SSH para {{ inventory_hostname }} en puerto {{ puerto_dinamico_tunel }}"
 #      ansible.builtin.command: >
