@@ -25,6 +25,7 @@
         -o BatchMode=yes
         -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ExitOnForwardFailure=yes
         -o ServerAliveInterval=60 -o ConnectTimeout=15
+        -vvv
         {{ jumphost_user }}@{{ jumphost_ip }}
       delegate_to: localhost
       changed_when: false
