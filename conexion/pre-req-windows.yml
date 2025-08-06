@@ -17,23 +17,42 @@
         msg: "TUNNEL DEBUG para {{ inventory_hostname }}: LocalPort={{ puerto_dinamico_tunel }}, TargetIP={{ target_actual_ip }}, TargetPort={{ target_actual_winrm_port }}, JumpUser={{ jumphost_user }}, JumpIP={{ jumphost_ip }}"
     
 ##########################
-    - name: "TUNNEL: Estableciendo túnel SSH para {{ inventory_hostname }} en puerto {{ puerto_dinamico_tunel }}"
+      - name: "TUNNEL: Estableciendo túnel SSH para {{ inventory_hostname }} en puerto {{ puerto_dinamico_tunel }}"
       ansible.builtin.shell:
         cmd: |
           set -e
+          # Crear un script temporal para que actúe como nuestro 'proveedor de passphrase'
+          SSH_ASKPASS_SCRIPT=$(mktemp /tmp/ssh_askpass_XXXXXX)
+          chmod +x "$SSH_ASKPASS_SCRIPT"
+          # Llenar el script con un comando que imprima la passphrase
+          echo "echo '{{ ansible_ssh_pass }}'" > "$SSH_ASKPASS_SCRIPT"
+
+          # Iniciar el agente SSH
           eval $(ssh-agent -s)
-          sshpass -p '{{ ansible_ssh_pass }}' ssh-add {{ jumphost_ssh_key_file }}
+
+          # Usar SSH_ASKPASS para añadir la llave al agente de forma no interactiva
+          # 'setsid' asegura que ssh-add se ejecute en un nuevo contexto sin terminal
+          DISPLAY=:0 setsid ssh-add {{ jumphost_ssh_key_file }} < /dev/null
+
+          # Limpiar el script temporal tan pronto como sea posible
+          rm -f "$SSH_ASKPASS_SCRIPT"
+          
+          # Ejecutar el comando del túnel (ahora usará la llave del agente)
           ssh -f -N -L {{ puerto_dinamico_tunel }}:{{ target_actual_ip }}:{{ target_actual_winrm_port }} \
-              -i {{ jumphost_ssh_key_file }} \
               -o BatchMode=yes \
               -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ExitOnForwardFailure=yes \
               -o ServerAliveInterval=60 -o ConnectTimeout=15 \
               {{ jumphost_user }}@{{ jumphost_ip }}
+          
+          # Detener el agente SSH
           ssh-agent -k
         executable: /bin/bash
       delegate_to: localhost
       changed_when: false
       register: tunnel_setup_status
+      # Exportamos la variable de entorno SSH_ASKPASS para que ssh-add la use
+      environment:
+        SSH_ASKPASS: "{{ SSH_ASKPASS_SCRIPT }}"
   #    no_log: true 
 ##########################
 #    - name: "TUNNEL: Estableciendo túnel SSH para {{ inventory_hostname }} en puerto {{ puerto_dinamico_tunel }}"
