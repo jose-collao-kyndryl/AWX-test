@@ -18,15 +18,19 @@
     
 ##########################
     - name: "TUNNEL: Estableciendo túnel SSH para {{ inventory_hostname }} en puerto {{ puerto_dinamico_tunel }}"
-      ansible.builtin.command: >- # <-- El guion al final ayuda con la legibilidad del YAML
-        sshpass -p '{{ ansible_ssh_pass }}'
-        ssh -f -N -L {{ puerto_dinamico_tunel }}:{{ target_actual_ip }}:{{ target_actual_winrm_port }}
-        -i {{ jumphost_ssh_key_file }}
-        -o BatchMode=yes
-        -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ExitOnForwardFailure=yes
-        -o ServerAliveInterval=60 -o ConnectTimeout=15
-        -vvv
-        {{ jumphost_user }}@{{ jumphost_ip }}
+      ansible.builtin.shell:
+        cmd: |
+          set -e
+          eval $(ssh-agent -s)
+          sshpass -p '{{ ansible_ssh_pass }}' ssh-add {{ jumphost_ssh_key_file }}
+          ssh -f -N -L {{ puerto_dinamico_tunel }}:{{ target_actual_ip }}:{{ target_actual_winrm_port }} \
+              -i {{ jumphost_ssh_key_file }} \
+              -o BatchMode=yes \
+              -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ExitOnForwardFailure=yes \
+              -o ServerAliveInterval=60 -o ConnectTimeout=15 \
+              {{ jumphost_user }}@{{ jumphost_ip }}
+          ssh-agent -k
+        executable: /bin/bash
       delegate_to: localhost
       changed_when: false
       register: tunnel_setup_status
