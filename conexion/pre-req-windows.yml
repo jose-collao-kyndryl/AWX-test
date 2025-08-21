@@ -3,6 +3,7 @@
   hosts: servidores_windows_via_jump
   gather_facts: false
   serial: 1
+  ignore_unreachable: true
   vars:
     puerto_base_tunel_local: 59850
   tasks:
