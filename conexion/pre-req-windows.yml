@@ -1,11 +1,19 @@
 ---
-- name: Validar Prerrequisitos en Servidores Windows via Jumphost
+- name: Validar Pre-requisitos en Servidores Windows via Jumphost
   hosts: servidores_windows_via_jump
   gather_facts: false
   serial: 1
   ignore_unreachable: true
   vars:
     puerto_base_tunel_local: 59850
+
+  pre_tasks:
+  - name: "REPORTE: Inicializar listas de resultados"
+    run_once: true
+    delegate_to: localhost
+    ansible.builtin.set_fact:
+      hosts_exitosos: []
+      hosts_fallidos: []
   tasks:
     - name: "CÁLCULO DE PUERTO: Definir puerto dinámico para {{ inventory_hostname }}"
       ansible.builtin.set_fact:
@@ -27,6 +35,7 @@
             {{ jumphost_user }}@{{ jumphost_ip }}
           delegate_to: localhost
           changed_when: false
+
         - name: "TUNNEL: Esperar a que el puerto local {{ puerto_dinamico_tunel }} esté activo"
           ansible.builtin.wait_for:
             host: 127.0.0.1
@@ -35,17 +44,24 @@
             delay: 2
             state: started
           delegate_to: localhost
+
         - name: "VALIDACIÓN WINDOWS: Conectividad WinRM y ejecución de 'hostname'"
           ansible.windows.win_command: hostname
           register: windows_hostname_validation
           changed_when: false
-        - name: "ÉXITO: Reporte de validación para {{ inventory_hostname }}"
-          ansible.builtin.debug:
-            msg: "PRERREQUISITOS OK para {{ inventory_hostname }} ({{ target_actual_ip }}). Hostname: {{ windows_hostname_validation.stdout_lines[0] }}"
+
+        - name: "Registrar host exitoso"
+          run_once: true
+          delegate_to: localhost
+          ansible.builtin.set_fact:
+            hosts_exitosos: "{{ hosts_exitosos + [{'host': inventory_hostname, 'ip': target_actual_ip, 'hostname_remoto': windows_hostname_validation.stdout_lines[0]}] }}"
       rescue:
-        - name: "FALLO: Reporte de error para {{ inventory_hostname }}"
-          ansible.builtin.debug:
-            msg: "ERROR al procesar {{ inventory_hostname }}. No se pudo establecer la conexión o validar. Continuando con el siguiente host."
+        - name: "Registrar host fallido"
+          run_once: true
+          delegate_to: localhost
+          ansible.builtin.set_fact:
+            hosts_fallidos: "{{ hosts_fallidos + [{'host': inventory_hostname, 'ip': target_actual_ip, 'error': ansible_failed_result.msg | default('Error desconocido al procesar el host.')}] }}"
+
       always:
         - name: "LIMPIEZA: Asegurando la terminación del túnel SSH para el puerto {{ puerto_dinamico_tunel }}"
           ansible.builtin.command: >
