@@ -69,3 +69,14 @@
           delegate_to: localhost
           changed_when: false
           failed_when: false
+  post_tasks:
+  - name: "REPORTE FINAL: Generar artefacto con el resumen"
+    run_once: true
+    delegate_to: localhost
+    ansible.builtin.set_stats:
+      data:
+        resumen_validacion:
+          hosts_exitosos_total: "{{ hosts_exitosos | length }}"
+          hosts_fallidos_total: "{{ hosts_fallidos | length }}"
+          hosts_exitosos: "{{ hosts_exitosos }}"
+          hosts_fallidos: "{{ hosts_fallidos }}"
