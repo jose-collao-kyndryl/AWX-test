@@ -1,19 +1,21 @@
 ---
+- name: Reporte - Creación de variables globales
+  hosts: localhost
+  gather_facts: false
+  tasks:
+  - name: "REPORTE: Inicializar listas de resultados"
+    ansible.builtin.set_fact:
+      hosts_exitosos: []
+      hosts_fallidos: []
+
 - name: Validar Pre-requisitos en Servidores Windows via Jumphost
-  hosts: servidores_windows_via_jump
+  hosts: serv idores_windows_via_jump
   gather_facts: false
   serial: 1
   ignore_unreachable: true
   vars:
     puerto_base_tunel_local: 59850
 
-  pre_tasks:
-  - name: "REPORTE: Inicializar listas de resultados"
-    run_once: true
-    delegate_to: localhost
-    ansible.builtin.set_fact:
-      hosts_exitosos: []
-      hosts_fallidos: []
   tasks:
     - name: "CÁLCULO DE PUERTO: Definir puerto dinámico para {{ inventory_hostname }}"
       ansible.builtin.set_fact:
@@ -51,16 +53,14 @@
           changed_when: false
 
         - name: "Registrar host exitoso"
-          run_once: true
           delegate_to: localhost
           ansible.builtin.set_fact:
-            hosts_exitosos: "{{ hosts_exitosos + [{'host': inventory_hostname, 'ip': target_actual_ip, 'hostname_remoto': windows_hostname_validation.stdout_lines[0]}] }}"
+            hosts_exitosos: "{{ hostvars.localhost.hosts_exitosos + [{'host': inventory_hostname, 'ip': target_actual_ip, 'hostname_remoto': windows_hostname_validation.stdout_lines[0]}] }}"
       rescue:
         - name: "Registrar host fallido"
-          run_once: true
           delegate_to: localhost
           ansible.builtin.set_fact:
-            hosts_fallidos: "{{ hosts_fallidos + [{'host': inventory_hostname, 'ip': target_actual_ip, 'error': ansible_failed_result.msg | default('Error desconocido al procesar el host.')}] }}"
+            hosts_fallidos: "{{ hostvars.localhost.hosts_fallidos + [{'host': inventory_hostname, 'ip': target_actual_ip, 'error': ansible_failed_result.msg | default('Error desconocido al procesar el host.')}] }}"
 
       always:
         - name: "LIMPIEZA: Asegurando la terminación del túnel SSH para el puerto {{ puerto_dinamico_tunel }}"
@@ -69,10 +69,11 @@
           delegate_to: localhost
           changed_when: false
           failed_when: false
-  post_tasks:
+- name: Reporte - generando artefacto FINAL
+  hosts: localhost
+  gather_facts: false
+  tasks:
   - name: "REPORTE FINAL: Generar artefacto con el resumen"
-    run_once: true
-    delegate_to: localhost
     ansible.builtin.set_stats:
       data:
         resumen_validacion:
