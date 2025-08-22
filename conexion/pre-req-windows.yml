@@ -1,6 +1,6 @@
 ---
 - name: Validar Pre-requisitos en Servidores Windows (Bucle Controlado)
-  hosts: localhost
+  hosts: servidores_windows_via_jump # <--- CORRECCIÓN 1: Vuelve a apuntar a tu grupo de servidores
   gather_facts: false
   
   vars:
@@ -8,17 +8,22 @@
 
   tasks:
     - name: "REPORTE: Inicializar listas de resultados"
+      run_once: true
+      delegate_to: localhost
       ansible.builtin.set_fact:
         hosts_exitosos: []
         hosts_fallidos: []
 
     - name: "Procesar cada servidor del inventario"
+      delegate_to: localhost # <--- CORRECCIÓN 2: Delega la tarea del bucle a localhost
       include_tasks: process_server.yml
       loop: "{{ query('inventory_hostnames', 'servidores_windows_via_jump') }}"
       loop_control:
         loop_var: current_host
 
     - name: "REPORTE FINAL: Generar artefacto con el resumen"
+      run_once: true
+      delegate_to: localhost
       ansible.builtin.set_stats:
         data:
           resumen_validacion:
