@@ -2,13 +2,12 @@
 - name: Validar Pre-requisitos en Servidores Windows (Versión Simplificada y Correcta)
   hosts: servidores_windows_via_jump
   gather_facts: false
-  serial: 1 # Es crucial mantener serial: 1
+  serial: 1 
   
   vars:
     puerto_base_tunel_local: 59850
 
   tasks:
-    # Tarea 1: Inicializar las listas. Se ejecuta solo una vez al principio.
     - name: "REPORTE: Inicializar listas de resultados"
       run_once: true
       delegate_to: localhost
@@ -16,12 +15,10 @@
         hosts_exitosos: []
         hosts_fallidos: []
 
-    # Tarea 2: Calcular el puerto. Se ejecuta en el contexto de cada host remoto.
     - name: "CÁLCULO DE PUERTO: Definir puerto para {{ inventory_hostname }}"
       ansible.builtin.set_fact:
         puerto_dinamico_tunel: "{{ puerto_base_tunel_local | int + ansible_play_hosts_all.index(inventory_hostname) | int }}"
 
-    # Tarea 3: El bloque principal. Se delega a localhost pero puede leer las variables del host remoto.
     - name: "PROCESO PRINCIPAL Y REPORTE PARA {{ inventory_hostname }}"
       delegate_to: localhost
       block:
@@ -46,8 +43,10 @@
               vars:
                 ansible_host: 127.0.0.1
                 ansible_port: "{{ hostvars[inventory_hostname].puerto_dinamico_tunel }}"
-                ansible_user: "{{ ansible_user }}"
-                ansible_password: "{{ ansible_password }}"
+                # --- CORRECCIÓN CLAVE AQUÍ ---
+                ansible_user: "{{ hostvars[inventory_hostname].ansible_user }}"
+                ansible_password: "{{ hostvars[inventory_hostname].ansible_password }}"
+                # --- FIN DE LA CORRECCIÓN ---
                 ansible_connection: winrm
                 ansible_winrm_transport: ntlm
                 ansible_winrm_server_cert_validation: ignore
@@ -70,7 +69,6 @@
               changed_when: false
               failed_when: false
 
-    # Tarea Final: Generar el artefacto. Se ejecuta solo una vez al final.
     - name: "REPORTE FINAL: Generar artefacto con el resumen"
       run_once: true
       delegate_to: localhost
