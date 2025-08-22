@@ -3,8 +3,10 @@
   block:
     - name: "CÁLCULO DE PUERTO para {{ current_host }}"
       ansible.builtin.set_fact:
-        puerto_dinamico_tunel: "{{ puerto_base_tunel_local | int + hostvars[current_host].ansible_play_hosts_all.index(current_host) | int }}"
+        # CORRECCIÓN: Usamos la variable 'lista_de_hosts' en lugar de 'ansible_play_hosts_all'
+        puerto_dinamico_tunel: "{{ puerto_base_tunel_local | int + lista_de_hosts.index(current_host) | int }}"
     
+    # --- El resto del archivo se mantiene exactamente igual ---
     - name: "Conexión, Validación y Limpieza para {{ current_host }}"
       block:
         - name: "TUNNEL: Estableciendo túnel para {{ current_host }}"
