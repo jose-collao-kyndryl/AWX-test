@@ -8,43 +8,23 @@
       hosts_exitosos: []
       hosts_fallidos: []
 - name: Validar Pre-requisitos en Servidores Windows via Jumphost
-
   hosts: serv idores_windows_via_jump
-
   gather_facts: false
-
   serial: 1
-
   ignore_unreachable: true
-
   vars:
-
     puerto_base_tunel_local: 59850
-
-
-
   tasks:
-
     - name: "CÁLCULO DE PUERTO: Definir puerto dinámico para {{ inventory_hostname }}"
-
       ansible.builtin.set_fact:
-
         puerto_dinamico_tunel: "{{ puerto_base_tunel_local | int + ansible_play_hosts_all.index(inventory_hostname) | int }}"
-
     - name: "Establecer ansible_port para {{ inventory_hostname }}"
-
       ansible.builtin.set_fact:
-
         ansible_port: "{{ puerto_dinamico_tunel }}"
-
     - name: "PROCESO PRINCIPAL Y LIMPIEZA PARA {{ inventory_hostname }}"
-
       block:
-
         - name: "TUNNEL: Mostrar parámetros para {{ inventory_hostname }}"
-
           ansible.builtin.debug:
-
             msg: "Iniciando túnel para {{ inventory_hostname }}: LocalPort={{ puerto_dinamico_tunel }}, Target={{ target_actual_ip }}:{{ target_actual_winrm_port }}, Jump={{ jumphost_user }}@{{ jumphost_ip }}"
 
 
