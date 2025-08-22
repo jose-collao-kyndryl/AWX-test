@@ -1,6 +1,6 @@
 ---
 # PLAY 1: Inicialización (Esta parte está perfecta)
-- name: "Reporte - Creación de variables globales"
+- name: "Reporte: Creación de variables globales"
   hosts: localhost
   gather_facts: false
   tasks:
