@@ -9,7 +9,7 @@
       hosts_fallidos: []
 
 - name: Validar Pre-requisitos en Servidores Windows via Jumphost
-  hosts: servidores_windows_via_jump
+  hosts: serv idores_windows_via_jump
   gather_facts: false
   serial: 1
   ignore_unreachable: true
