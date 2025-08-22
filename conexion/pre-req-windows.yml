@@ -1,9 +1,10 @@
 ---
-- name: Validar Pre-requisitos en Servidores Windows (Versión Simplificada y Correcta)
+- name: Validar Pre-requisitos en Servidores Windows (Versión Final y Robusta)
   hosts: servidores_windows_via_jump
   gather_facts: false
   serial: 1 
-  
+  ignore_unreachable: true # <--- CORRECCIÓN: Esta línea es la que faltaba
+
   vars:
     puerto_base_tunel_local: 59850
 
@@ -43,10 +44,8 @@
               vars:
                 ansible_host: 127.0.0.1
                 ansible_port: "{{ hostvars[inventory_hostname].puerto_dinamico_tunel }}"
-                # --- CORRECCIÓN CLAVE AQUÍ ---
                 ansible_user: "{{ hostvars[inventory_hostname].ansible_user }}"
                 ansible_password: "{{ hostvars[inventory_hostname].ansible_password }}"
-                # --- FIN DE LA CORRECCIÓN ---
                 ansible_connection: winrm
                 ansible_winrm_transport: ntlm
                 ansible_winrm_server_cert_validation: ignore
