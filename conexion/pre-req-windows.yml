@@ -1,6 +1,6 @@
 ---
 - name: Validar Pre-requisitos en Servidores Windows (Bucle Controlado)
-  hosts: servidores_windows_via_jump # <--- CORRECCIÓN 1: Vuelve a apuntar a tu grupo de servidores
+  hosts: servidores_windows_via_jump
   gather_facts: false
   
   vars:
@@ -14,12 +14,14 @@
         hosts_exitosos: []
         hosts_fallidos: []
 
-    - name: "Procesar cada servidor del inventario"
-      delegate_to: localhost # <--- CORRECCIÓN 2: Delega la tarea del bucle a localhost
-      include_tasks: process_server.yml
-      loop: "{{ query('inventory_hostnames', 'servidores_windows_via_jump') }}"
-      loop_control:
-        loop_var: current_host
+    - name: "Bucle de procesamiento en localhost"
+      block:
+        - name: "Procesar cada servidor del inventario"
+          include_tasks: process_server.yml
+          loop: "{{ query('inventory_hostnames', 'servidores_windows_via_jump') }}"
+          loop_control:
+            loop_var: current_host
+      delegate_to: localhost
 
     - name: "REPORTE FINAL: Generar artefacto con el resumen"
       run_once: true
