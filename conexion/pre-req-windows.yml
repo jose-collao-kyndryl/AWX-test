@@ -11,7 +11,7 @@
 
 # PLAY 2: Ejecución Principal (Aquí aplicamos las correcciones)
 - name: "Validar Pre-requisitos en Servidores Windows via Jumphost"
-  hosts: servidores_windows_via_jump
+  hosts: CG4_*_ADS
   gather_facts: false
   serial: 1
   ignore_unreachable: true
