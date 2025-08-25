@@ -1,6 +1,6 @@
 ---
 - name: Depurar Establecimiento de Túnel SSH
-  hosts: servidores_windows_via_jump
+  hosts: "*_*_ADS"
   gather_facts: no
   serial: 1
   vars:
